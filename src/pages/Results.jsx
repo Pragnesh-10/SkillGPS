@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getRecommendations } from '../utils/recommendationEngine';
+import { motion } from 'framer-motion';
 import { CheckCircle, Loader } from 'lucide-react';
 
 const Results = () => {
@@ -55,9 +56,14 @@ const Results = () => {
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Based on your skills, interests, and personality, these are your top domains.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+            <motion.div
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.15 }}
+            >
                 {domains.map((domain, index) => (
-                    <div
+                    <motion.div
                         key={domain}
                         className="card"
                         style={{
@@ -67,6 +73,10 @@ const Results = () => {
                             position: 'relative',
                             overflow: 'hidden'
                         }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ y: -5, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}
+                        transition={{ duration: 0.4 }}
                     >
                         <div style={{
                             position: 'absolute',
@@ -98,9 +108,9 @@ const Results = () => {
                                 <CheckCircle size={12} /> BEST MATCH
                             </div>
                         )}
-                    </div>
+                    </motion.div>
                 ))}
-            </div>
+            </motion.div>
         </div>
     );
 };

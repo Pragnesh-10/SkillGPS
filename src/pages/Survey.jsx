@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import BackgroundStep from '../components/survey/BackgroundStep';
-import SkillsStep from '../components/survey/SkillsStep';
+import { AnimatePresence } from 'framer-motion';
 import InterestStep from '../components/survey/InterestStep';
 import WorkStyleStep from '../components/survey/WorkStyleStep';
 import IntentStep from '../components/survey/IntentStep';
@@ -11,11 +10,6 @@ const Survey = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
-        education: '',
-        major: '',
-        year: '',
-        languages: [],
-        tools: [],
         interests: {},
         workStyle: {},
         intent: {},
@@ -38,22 +32,13 @@ const Survey = () => {
     const renderStep = () => {
         switch (step) {
             case 1:
-                return <BackgroundStep data={formData} updateData={updateData} onNext={nextStep} />;
+                return <InterestStep key="step1" data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
             case 2:
-                // Skip skills for students (High School, Undergrad, Grad)
-                if (['highschool', 'undergrad', 'grad'].includes(formData.education)) {
-                    nextStep();
-                    return null;
-                }
-                return <SkillsStep data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+                return <WorkStyleStep key="step2" data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
             case 3:
-                return <InterestStep data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+                return <IntentStep key="step3" data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
             case 4:
-                return <WorkStyleStep data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-            case 5:
-                return <IntentStep data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
-            case 6:
-                return <ConfidenceStep data={formData} updateData={updateData} onNext={handleFinish} onBack={prevStep} />;
+                return <ConfidenceStep key="step4" data={formData} updateData={updateData} onNext={handleFinish} onBack={prevStep} />;
             default:
                 return null;
         }
@@ -63,10 +48,12 @@ const Survey = () => {
         <div className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
             {/* Simple Progress Bar */}
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)' }}>
-                <div style={{ width: `${(step / 6) * 100}%`, height: '100%', background: 'var(--gradient-main)', transition: 'width 0.3s ease' }}></div>
+                <div style={{ width: `${(step / 4) * 100}%`, height: '100%', background: 'var(--gradient-main)', transition: 'width 0.3s ease' }}></div>
             </div>
 
-            {renderStep()}
+            <AnimatePresence mode="wait">
+                {renderStep()}
+            </AnimatePresence>
         </div>
     );
 };

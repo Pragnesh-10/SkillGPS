@@ -1,8 +1,16 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 const StepWrapper = ({ title, description, children, onNext, onBack, isLastStep }) => {
     return (
-        <div className="card" style={{ maxWidth: '600px', width: '100%', margin: '0 auto', animation: 'fadeIn 0.5s ease-out' }}>
+        <motion.div
+            className="card"
+            style={{ maxWidth: '600px', width: '100%', margin: '0 auto' }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+        >
             <div style={{ marginBottom: '32px', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '2rem', marginBottom: '8px', color: 'var(--text-main)' }}>{title}</h2>
                 <p style={{ color: 'var(--text-muted)' }}>{description}</p>
@@ -25,14 +33,7 @@ const StepWrapper = ({ title, description, children, onNext, onBack, isLastStep 
                     {isLastStep ? 'Finish' : 'Next'}
                 </button>
             </div>
-
-            <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-        </div>
+        </motion.div>
     );
 };
 

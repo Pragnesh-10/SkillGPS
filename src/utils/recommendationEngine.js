@@ -11,7 +11,7 @@ export const getRecommendations = (data) => {
         'Business Analyst': 0
     };
 
-    const { education, languages, tools, interests, confidence, workStyle, intent } = data;
+    const { interests, confidence, workStyle, intent } = data;
 
     // --- 1. Work Style Analysis (Counselor Personality Fit) ---
     const ws = workStyle || {};
@@ -143,11 +143,7 @@ export const getRecommendations = (data) => {
 
 
     // --- 5. Tech Skills (Bonus if checked) ---
-    if (languages && languages.length > 0) {
-        if (languages.includes('Python')) { scores['Data Scientist'] += 2; scores['AI/ML Engineer'] += 2; scores['Backend Developer'] += 1; }
-        if (languages.includes('SQL')) { scores['Data Scientist'] += 2; scores['Business Analyst'] += 2; scores['Backend Developer'] += 1; }
-        if (languages.includes('JavaScript')) { scores['Backend Developer'] += 2; scores['UI/UX Designer'] += 1; }
-    }
+
 
 
     // Normalize and Sort

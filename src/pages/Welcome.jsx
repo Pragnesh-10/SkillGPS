@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import BackgroundGlow from '../components/common/BackgroundGlow';
 import './Welcome.css';
@@ -7,31 +8,64 @@ import './Welcome.css';
 const Welcome = () => {
   const navigate = useNavigate();
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
+
   return (
     <div className="container welcome-container">
 
       {/* Background Glow */}
       <BackgroundGlow />
 
-      <div className="welcome-badge">
-        <Sparkles size={16} color="#ec4899" />
-        <span>AI-Powered Career Guidance</span>
-      </div>
+      <motion.div
+        className="welcome-content"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div className="welcome-badge" variants={itemVariants}>
+          <Sparkles size={16} color="#ec4899" />
+          <span className="welcome-badge-text">AI-Powered Career Guidance</span>
+        </motion.div>
 
-      <h1 className="welcome-title">
-        Discover Your <br />
-        <span className="gradient-text">True Potential</span>
-      </h1>
+        <motion.h1 className="welcome-title" variants={itemVariants}>
+          Discover Your <br />
+          <span className="gradient-text">True Potential</span>
+        </motion.h1>
 
-      <p className="welcome-description">
-        Stop guessing your future. Let our AI analyze your skills, interests, and personality to build a personalized career roadmap for you.
-      </p>
+        <motion.p className="welcome-description" variants={itemVariants}>
+          Stop guessing your future. Let our AI analyze your skills, interests, and personality to build a personalized career roadmap for you.
+        </motion.p>
 
-      <button onClick={() => navigate('/survey')} className="btn-primary welcome-cta">
-        Start Your Journey <ArrowRight size={20} />
-      </button>
+        <motion.button
+          onClick={() => navigate('/survey')}
+          className="btn-primary welcome-cta"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          variants={itemVariants}
+        >
+          Start Your Journey <ArrowRight size={20} />
+        </motion.button>
+      </motion.div>
 
-      <div className="welcome-stats">
+      <motion.div
+        className="welcome-stats"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.8 }}
+      >
         <div className="stat-item">
           <h3>50+</h3>
           <p>Career Paths</p>
@@ -44,7 +78,7 @@ const Welcome = () => {
           <h3>Verified</h3>
           <p>Expert Network</p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

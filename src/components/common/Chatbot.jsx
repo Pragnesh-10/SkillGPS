@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 import './Chatbot.css';
 
@@ -61,42 +62,50 @@ const Chatbot = () => {
 
     return (
         <div className="chatbot-wrapper">
-            {isOpen && (
-                <div className="chatbot-window">
-                    <div className="chatbot-header">
-                        <div className="chatbot-title">
-                            <Sparkles size={18} />
-                            <span>AI Assistant</span>
-                        </div>
-                        <button onClick={toggleChat} className="chatbot-close-btn">
-                            <X size={18} />
-                        </button>
-                    </div>
-
-                    <div className="chatbot-messages">
-                        {messages.map((msg) => (
-                            <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
-                                {msg.text}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        className="chatbot-window"
+                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <div className="chatbot-header">
+                            <div className="chatbot-title">
+                                <Sparkles size={18} />
+                                <span>AI Assistant</span>
                             </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                    </div>
+                            <button onClick={toggleChat} className="chatbot-close-btn">
+                                <X size={18} />
+                            </button>
+                        </div>
 
-                    <div className="chatbot-input-area">
-                        <input
-                            type="text"
-                            placeholder="Ask anything..."
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            className="chatbot-input"
-                        />
-                        <button onClick={handleSendMessage} className="chatbot-send-btn">
-                            <Send size={18} />
-                        </button>
-                    </div>
-                </div>
-            )}
+                        <div className="chatbot-messages">
+                            {messages.map((msg) => (
+                                <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
+                                    {msg.text}
+                                </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        <div className="chatbot-input-area">
+                            <input
+                                type="text"
+                                placeholder="Ask anything..."
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                className="chatbot-input"
+                            />
+                            <button onClick={handleSendMessage} className="chatbot-send-btn">
+                                <Send size={18} />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <button onClick={toggleChat} className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}>
                 {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
