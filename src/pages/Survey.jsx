@@ -16,7 +16,41 @@ const Survey = () => {
         confidence: { math: 5, coding: 5, communication: 5 }
     });
 
-    const nextStep = () => setStep(step + 1);
+    const validateStep = () => {
+        switch (step) {
+            case 1:
+                const { numbers, building, design, explaining, logic } = formData.interests || {};
+                // Check if all Interest fields have a boolean value (true or false, not undefined)
+                if (numbers === undefined || building === undefined || design === undefined || explaining === undefined || logic === undefined) {
+                    return false;
+                }
+                return true;
+            case 2:
+                const { environment, structure, roleType } = formData.workStyle || {};
+                // Check if all Work Style fields are selected (truthy strings)
+                if (!environment || !structure || !roleType) {
+                    return false;
+                }
+                return true;
+            case 3:
+                const { afterEdu, workplace, nature } = formData.intent || {};
+                // Check if all Intent fields are selected
+                if (!afterEdu || !workplace || !nature) {
+                    return false;
+                }
+                return true;
+            default:
+                return true;
+        }
+    };
+
+    const nextStep = () => {
+        if (!validateStep()) {
+            alert("Please answer all questions to proceed.");
+            return;
+        }
+        setStep(step + 1);
+    };
     const prevStep = () => setStep(step - 1);
 
     const updateData = (newData) => {
