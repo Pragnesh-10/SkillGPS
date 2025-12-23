@@ -298,14 +298,6 @@ const Dashboard = () => {
                             </span>
                         </div>
                     </div>
-                    <div style={{ background: 'rgba(255,255,255,0.1)', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
-                        <motion.div
-                            style={{ width: `${progress}%`, height: '100%', background: 'var(--primary)' }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                    </div>
                 </motion.div>
             </div>
 
