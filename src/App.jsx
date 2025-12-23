@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Welcome from './pages/Welcome';
+import Login from './pages/Login';
 import Survey from './pages/Survey';
 import Results from './pages/Results';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/survey" element={<Survey />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/results" element={<Results />} />
 
         <Route element={<DashboardLayout />}>

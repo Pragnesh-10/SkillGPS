@@ -1,7 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Cpu, Zap } from 'lucide-react';
 import './Chatbot.css';
 
 const Chatbot = () => {
@@ -10,6 +11,8 @@ const Chatbot = () => {
         { id: 1, text: "Hi there! I'm your SkillGPS Assistant. How can I help you today?", sender: 'bot' }
     ]);
     const [inputValue, setInputValue] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const [provider, setProvider] = useState('gemini'); // 'gemini' or 'openai'
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -18,40 +21,40 @@ const Chatbot = () => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isTyping]);
 
     const toggleChat = () => setIsOpen(!isOpen);
 
-    const handleSendMessage = () => {
-        if (inputValue.trim() === '') return;
+    const handleSendMessage = async (text = inputValue) => {
+        if (!text.trim()) return;
 
         const newUserMessage = {
             id: messages.length + 1,
-            text: inputValue,
+            text: text,
             sender: 'user'
         };
 
         setMessages(prev => [...prev, newUserMessage]);
         setInputValue('');
+        setIsTyping(true);
 
-        // Simulate AI response
-        setTimeout(() => {
-            const botResponses = [
-                "That's an interesting question! Based on your profile, I'd suggest focusing on Python and React.",
-                "To advance your career, consider connecting with mentors in the 'Experts' section.",
-                "Your progress looks great! Keep up the good work on the Data Science track.",
-                "I can help you prepare for interviews. Would you like some mock questions?",
-                "Have you checked out the latest industry trends in the Dashboard?"
-            ];
-            const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
+        try {
+            const responseText = await generateAIResponse(text, provider);
 
-            const newBotMessage = {
-                id: messages.length + 2,
-                text: randomResponse,
+            setMessages(prev => [...prev, {
+                id: prev.length + 1,
+                text: responseText,
                 sender: 'bot'
-            };
-            setMessages(prev => [...prev, newBotMessage]);
-        }, 1000);
+            }]);
+        } catch (error) {
+            setMessages(prev => [...prev, {
+                id: prev.length + 1,
+                text: "Sorry, I encountered an error connecting to the AI service.",
+                sender: 'bot'
+            }]);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
     const handleKeyPress = (e) => {
@@ -59,6 +62,27 @@ const Chatbot = () => {
             handleSendMessage();
         }
     };
+
+    const QuickAction = ({ text }) => (
+        <button
+            onClick={() => handleSendMessage(text)}
+            style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--border-light)',
+                borderRadius: '16px',
+                padding: '4px 12px',
+                color: 'var(--text-muted)',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+            onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+        >
+            {text}
+        </button>
+    );
 
     return (
         <div className="chatbot-wrapper">
@@ -74,11 +98,20 @@ const Chatbot = () => {
                         <div className="chatbot-header">
                             <div className="chatbot-title">
                                 <Sparkles size={18} />
-                                <span>AI Assistant</span>
+                                <span>SkillGPS Assistant</span>
                             </div>
-                            <button onClick={toggleChat} className="chatbot-close-btn">
-                                <X size={18} />
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    onClick={() => setProvider(provider === 'gemini' ? 'openai' : 'gemini')}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)' }}
+                                    title={`Switch AI Model (Current: ${provider === 'gemini' ? 'Gemini' : 'ChatGPT'})`}
+                                >
+                                    {provider === 'gemini' ? <Zap size={18} /> : <Cpu size={18} />}
+                                </button>
+                                <button onClick={toggleChat} className="chatbot-close-btn">
+                                    <X size={18} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="chatbot-messages">
@@ -87,8 +120,25 @@ const Chatbot = () => {
                                     {msg.text}
                                 </div>
                             ))}
+                            {isTyping && (
+                                <div className="message message-bot">
+                                    <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
+                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
+                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
+                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
+                                    </span>
+                                </div>
+                            )}
                             <div ref={messagesEndRef} />
                         </div>
+
+                        {messages.length < 3 && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Recommend a course" />
+                                <QuickAction text="Interview tips" />
+                                <QuickAction text="Career advice" />
+                            </div>
+                        )}
 
                         <div className="chatbot-input-area">
                             <input
@@ -99,7 +149,7 @@ const Chatbot = () => {
                                 onKeyPress={handleKeyPress}
                                 className="chatbot-input"
                             />
-                            <button onClick={handleSendMessage} className="chatbot-send-btn">
+                            <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
                                 <Send size={18} />
                             </button>
                         </div>

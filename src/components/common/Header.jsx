@@ -21,7 +21,7 @@ const Header = () => {
         alert('Referral link copied to clipboard!');
     };
 
-    if (location.pathname === '/' || location.pathname === '/survey') {
+    if (location.pathname === '/' || location.pathname === '/survey' || location.pathname === '/login') {
         return null;
     }
 
@@ -33,7 +33,7 @@ const Header = () => {
                     className="logo-container"
                     style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                 >
-                    <img src="/logo.png" alt="SkillGPS" style={{ height: '32px', width: 'auto' }} />
+                    <img src="/logo.png" alt="SkillGPS" style={{ height: '30px', width: 'auto' }} />
                     SkillGPS
                 </div>
 
@@ -61,7 +61,10 @@ const Header = () => {
                                 <MenuItem icon={CreditCard} label="Subscription" onClick={() => handleMenuClick('/subscription')} />
                                 <MenuItem icon={Share2} label="Refer Now" onClick={handleReferral} />
                                 <div className="dropdown-separator"></div>
-                                <MenuItem icon={LogOut} label="Log Out" onClick={() => navigate('/')} danger />
+                                <MenuItem icon={LogOut} label="Log Out" onClick={() => {
+                                    localStorage.removeItem('isAuthenticated');
+                                    navigate('/login');
+                                }} danger />
                             </div>
                         )}
                     </div>
