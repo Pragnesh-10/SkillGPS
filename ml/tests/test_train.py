@@ -47,7 +47,13 @@ def test_train_saves_model(tmp_path):
     model_path = tmp_path / 'model.joblib'
     make_small_jsonl(str(data_path))
 
+    # Determine path to train.py relative to this test file
+    # This file: ml/tests/test_train.py
+    # target:    ml/train.py
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    train_script = os.path.join(base_dir, 'train.py')
+
     # Run training script
-    res = subprocess.run([sys.executable, 'ml/train.py', '--input', str(data_path), '--out', str(model_path), '--test-size', '0.5', '--cv-folds', '2', '--n-jobs', '1'], cwd=os.path.join(os.getcwd()), capture_output=True, text=True)
+    res = subprocess.run([sys.executable, train_script, '--input', str(data_path), '--out', str(model_path), '--test-size', '0.5', '--cv-folds', '2', '--n-jobs', '1'], cwd=base_dir, capture_output=True, text=True)
     assert res.returncode == 0, f"Training script failed: {res.stdout}\n{res.stderr}"
     assert model_path.exists()
