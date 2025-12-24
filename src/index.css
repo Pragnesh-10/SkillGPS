@@ -93,3 +93,15 @@ button {
   border-color: rgba(99, 102, 241, 0.3);
   transform: translateY(-2px);
 }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+@media (min-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

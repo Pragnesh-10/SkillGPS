@@ -12,23 +12,65 @@ const experts = [
 const Experts = () => {
     const navigate = useNavigate();
     const [isPremium, setIsPremium] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedExpert, setSelectedExpert] = useState(null);
+    const [meetingTime, setMeetingTime] = useState('');
 
     useEffect(() => {
         const premiumStatus = localStorage.getItem('isPremium') === 'true';
         setIsPremium(premiumStatus);
     }, []);
 
-    const handleConnect = (expertName) => {
+    const handleConnect = (expert) => {
         if (!isPremium) {
             // Trigger Paywall / Navigate to Subscription
             navigate('/subscription');
         } else {
-            alert(`Request sent to ${expertName}! They will contact you shortly.`);
+            setSelectedExpert(expert);
+            setShowModal(true);
         }
     };
 
+    const handleConfirmMeeting = (e) => {
+        e.preventDefault();
+        if (!meetingTime) {
+            alert('Please select a time for the meeting.');
+            return;
+        }
+
+        // Simulate sending email
+        const userEmail = "user@example.com"; // Mock user email
+        const emailContent = `
+        Subject: Meeting Confirmation with ${selectedExpert.name} - SkillGPS
+
+        Dear User,
+
+        This email confirms your request to connect with ${selectedExpert.name} (${selectedExpert.role} at ${selectedExpert.company}).
+        
+        Meeting Details:
+        Expert: ${selectedExpert.name}
+        Topic: Career Guidance & Mentorship
+        Scheduled Time: ${new Date(meetingTime).toLocaleString()}
+        
+        Please be ready 5 minutes prior to the scheduled time. A Google Meet link will be shared shortly.
+
+        Best regards,
+        The SkillGPS Team
+        `;
+
+        console.log("SENDING EMAIL...", emailContent);
+
+        // Close modal and reset
+        setShowModal(false);
+        setMeetingTime('');
+        setSelectedExpert(null);
+
+        // Show success message
+        alert(`Request sent to ${selectedExpert.name}! A confirmation email has been sent to you.`);
+    };
+
     return (
-        <div className="container">
+        <div className="container" style={{ position: 'relative' }}>
             <div style={{ marginBottom: '40px' }}>
                 <h1 style={{ fontSize: '2.5rem' }}>Talk to Industry Experts</h1>
                 <p style={{ color: 'var(--text-muted)' }}>Get 1:1 guidance, mock interviews, and resume reviews.</p>
@@ -70,7 +112,7 @@ const Experts = () => {
                                 cursor: 'pointer',
                                 transition: 'all 0.2s'
                             }}
-                            onClick={() => handleConnect(expert.name)}
+                            onClick={() => handleConnect(expert)}
                         >
                             {isPremium ? 'Connect Now' : (
                                 <>
@@ -81,6 +123,88 @@ const Experts = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Modal Overlay */}
+            {showModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: '#1a1a1a',
+                        padding: '30px',
+                        borderRadius: '12px',
+                        width: '90%',
+                        maxWidth: '500px',
+                        border: '1px solid #333'
+                    }}>
+                        <h2 style={{ marginBottom: '20px', fontSize: '1.5rem' }}>Schedule with {selectedExpert?.name}</h2>
+
+                        <form onSubmit={handleConfirmMeeting} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', color: '#ccc' }}>Select Date & Time</label>
+                                <input
+                                    type="datetime-local"
+                                    value={meetingTime}
+                                    onChange={(e) => setMeetingTime(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #333',
+                                        backgroundColor: '#2a2a2a',
+                                        color: 'white',
+                                        fontSize: '1rem'
+                                    }}
+                                    min={new Date().toISOString().slice(0, 16)}
+                                    required
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowModal(false)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #333',
+                                        backgroundColor: 'transparent',
+                                        color: '#ccc',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        background: 'var(--gradient-main)',
+                                        color: 'white',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Confirm Meeting
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

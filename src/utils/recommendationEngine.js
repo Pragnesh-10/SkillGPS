@@ -1,157 +1,133 @@
-export const getRecommendations = (data) => {
-    // Initialize scores
-    const scores = {
-        'Data Scientist': 0,
-        'Backend Developer': 0,
-        'UI/UX Designer': 0,
-        'Cybersecurity Analyst': 0,
-        'Product Manager': 0,
-        'Cloud Engineer': 0,
-        'AI/ML Engineer': 0,
-        'Business Analyst': 0
-    };
+// Vector Space Model (VSM) for Career Recommendations
+// Uses Cosine Similarity to find the nearest career centroid to the user's profile vector.
 
-    const { interests, confidence, workStyle, intent } = data;
+// 1. Define Attributes (Dimensions of our vector space)
+const ALL_ATTRIBUTES = [
+    // Work Style
+    'env_solo', 'env_team', 'struct_structured', 'struct_flexible', 'role_dynamic', 'role_desk',
+    // Interests
+    'int_numbers', 'int_building', 'int_design', 'int_explaining', 'int_logic',
+    // Confidence (Normalized to 0-1)
+    'conf_math', 'conf_coding', 'conf_communication'
+];
 
-    // --- 1. Work Style Analysis (Counselor Personality Fit) ---
-    const ws = workStyle || {};
-
-    // Environment: Solo vs Team
-    if (ws.environment === 'Solo') {
-        scores['Backend Developer'] += 3;
-        scores['Cybersecurity Analyst'] += 4; // High focus, often independent
-        scores['Cloud Engineer'] += 3;
-        scores['Data Scientist'] += 2;
-    } else if (ws.environment === 'Team') {
-        scores['Product Manager'] += 5; // Heavy collaboration
-        scores['Business Analyst'] += 4;
-        scores['UI/UX Designer'] += 3; // Closely works with product/devs
+// 2. Define Career Centroids (Ideal vectors for each career)
+// Values are between 0 and 1 representing importance/alignment
+const CAREER_VECTORS = {
+    'Data Scientist': {
+        env_solo: 0.6, env_team: 0.4, struct_structured: 0.7, struct_flexible: 0.3, role_desk: 0.9,
+        int_numbers: 1.0, int_logic: 0.9, int_explaining: 0.6,
+        conf_math: 0.9, conf_coding: 0.8, conf_communication: 0.6
+    },
+    'Backend Developer': {
+        env_solo: 0.8, env_team: 0.2, struct_structured: 0.8, struct_flexible: 0.2, role_desk: 1.0,
+        int_building: 1.0, int_logic: 0.9, int_numbers: 0.4,
+        conf_coding: 1.0, conf_math: 0.5, conf_communication: 0.3
+    },
+    'UI/UX Designer': {
+        env_solo: 0.4, env_team: 0.6, struct_flexible: 0.9, struct_structured: 0.1, role_desk: 0.9,
+        int_design: 1.0, int_building: 0.5, int_explaining: 0.4,
+        conf_communication: 0.7, conf_coding: 0.3, conf_math: 0.2
+    },
+    'Product Manager': {
+        env_team: 1.0, env_solo: 0.0, struct_flexible: 0.8, struct_structured: 0.2, role_dynamic: 0.7,
+        int_explaining: 1.0, int_design: 0.4, int_logic: 0.6,
+        conf_communication: 1.0, conf_math: 0.5, conf_coding: 0.3
+    },
+    'Cybersecurity Analyst': {
+        env_solo: 0.7, env_team: 0.3, struct_structured: 1.0, struct_flexible: 0.0, role_desk: 0.9,
+        int_logic: 1.0, int_numbers: 0.6, int_building: 0.3,
+        conf_coding: 0.7, conf_math: 0.6, conf_communication: 0.4
+    },
+    'Cloud Engineer': {
+        env_solo: 0.6, env_team: 0.4, struct_structured: 0.7, struct_flexible: 0.3, role_desk: 0.8,
+        int_building: 0.9, int_logic: 0.8, int_numbers: 0.3,
+        conf_coding: 0.8, conf_math: 0.4, conf_communication: 0.5
+    },
+    'AI/ML Engineer': {
+        env_solo: 0.5, env_team: 0.5, struct_flexible: 0.7, struct_structured: 0.3, role_desk: 0.9,
+        int_numbers: 1.0, int_building: 0.8, int_logic: 1.0,
+        conf_math: 1.0, conf_coding: 0.9, conf_communication: 0.5
+    },
+    'Business Analyst': {
+        env_team: 0.8, env_solo: 0.2, struct_structured: 0.8, struct_flexible: 0.2, role_dynamic: 0.5,
+        int_explaining: 0.9, int_numbers: 0.7, int_logic: 0.6,
+        conf_communication: 0.9, conf_math: 0.6, conf_coding: 0.2
     }
-
-    // Structure: Structured vs Flexible
-    if (ws.structure === 'Structured') {
-        scores['Cybersecurity Analyst'] += 3; // Protocols/Compliance
-        scores['Backend Developer'] += 2; // Defined specs usually
-        scores['Business Analyst'] += 3;
-    } else if (ws.structure === 'Flexible') {
-        scores['UI/UX Designer'] += 3; // Creative iteration
-        scores['Product Manager'] += 3; // Handling ambiguity
-        scores['AI/ML Engineer'] += 2; // Experimentation nature
-    }
-
-    // Role Type: Desk vs Dynamic
-    if (ws.roleType === 'Dynamic') {
-        scores['Product Manager'] += 4;
-        scores['Business Analyst'] += 2;
-    } else {
-        scores['Backend Developer'] += 2;
-        scores['Cloud Engineer'] += 2;
-    }
-
-
-    // --- 2. Interest Signals (Core Passion) ---
-    const ints = interests || {};
-
-    if (ints.numbers) {
-        scores['Data Scientist'] += 5; // Direct match
-        scores['AI/ML Engineer'] += 4;
-        scores['Business Analyst'] += 3;
-        scores['Cybersecurity Analyst'] += 2; // Cryptography/Sequences
-    }
-
-    if (ints.building) {
-        scores['Backend Developer'] += 5;
-        scores['Cloud Engineer'] += 4;
-        scores['AI/ML Engineer'] += 3; // Building models
-        scores['UI/UX Designer'] += 1; // Prototyping
-    }
-
-    if (ints.design) {
-        scores['UI/UX Designer'] += 8; // Primary signal
-        scores['Product Manager'] += 3; // UX awareness
-    }
-
-    if (ints.explaining) {
-        scores['Product Manager'] += 5;
-        scores['Business Analyst'] += 5;
-        scores['Data Scientist'] += 2; // Storytelling with data
-    }
-
-    if (ints.logic) {
-        scores['Backend Developer'] += 3;
-        scores['Data Scientist'] += 2;
-        scores['Cybersecurity Analyst'] += 3;
-    }
-
-
-    // --- 3. Career Intent (Goals) ---
-    const usrIntent = intent || {};
-
-    if (usrIntent.nature === 'research') {
-        scores['AI/ML Engineer'] += 5;
-        scores['Data Scientist'] += 4;
-    } else if (usrIntent.nature === 'applied') {
-        scores['Backend Developer'] += 3;
-        scores['Product Manager'] += 3;
-        scores['Cloud Engineer'] += 3;
-        scores['UI/UX Designer'] += 2;
-    }
-
-    if (usrIntent.workplace === 'corporate') {
-        scores['Business Analyst'] += 2;
-        scores['Cybersecurity Analyst'] += 3; // Big corps hire security teams
-    } else if (usrIntent.workplace === 'startup') {
-        scores['Product Manager'] += 2;
-        scores['Backend Developer'] += 2; // Builders needed
-    }
-
-
-    // --- 4. Confidence & Skills (Capability) ---
-    const conf = confidence || {};
-
-    // Math Confidence
-    if (conf.math >= 8) {
-        scores['Data Scientist'] += 4;
-        scores['AI/ML Engineer'] += 4;
-    } else if (conf.math <= 4) {
-        scores['Data Scientist'] -= 5; // Hard to do DS without math
-        scores['AI/ML Engineer'] -= 3;
-    }
-
-    // Coding Confidence
-    if (conf.coding >= 8) {
-        scores['Backend Developer'] += 4;
-        scores['Cloud Engineer'] += 4;
-        scores['AI/ML Engineer'] += 3;
-    } else if (conf.coding <= 3) {
-        scores['Backend Developer'] -= 5;
-        // Boost low-code/no-code friendly roles slightly relative to dev
-        scores['Product Manager'] += 2;
-        scores['Business Analyst'] += 2;
-        scores['UI/UX Designer'] += 1;
-    }
-
-    // Communication Confidence
-    if (conf.communication >= 8) {
-        scores['Product Manager'] += 5;
-        scores['Business Analyst'] += 4;
-        scores['UI/UX Designer'] += 2; // presenting designs
-    } else if (conf.communication <= 4) {
-        scores['Product Manager'] -= 5; // Crucial for PM
-        scores['Backend Developer'] += 1; // Slight bias towards solo work?
-    }
-
-
-    // --- 5. Tech Skills (Bonus if checked) ---
-
-
-
-    // Normalize and Sort
-    // Add some randomness to break ties for consistent inputs? 
-    // No, deterministic is better for testing.
-
-    return Object.entries(scores)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 3)
-        .map(([domain]) => domain);
 };
+
+// --- Math Helpers ---
+
+const dotProduct = (vecA, vecB) => {
+    let product = 0;
+    for (const dim of ALL_ATTRIBUTES) {
+        product += (vecA[dim] || 0) * (vecB[dim] || 0);
+    }
+    return product;
+};
+
+const magnitude = (vec) => {
+    let sumSq = 0;
+    for (const dim of ALL_ATTRIBUTES) {
+        sumSq += (vec[dim] || 0) ** 2;
+    }
+    return Math.sqrt(sumSq);
+};
+
+const cosineSimilarity = (vecA, vecB) => {
+    const dot = dotProduct(vecA, vecB);
+    const magA = magnitude(vecA);
+    const magB = magnitude(vecB);
+    return (magA && magB) ? dot / (magA * magB) : 0;
+};
+
+// --- Main Engine ---
+
+const createUserVector = (data) => {
+    const vec = {};
+    const { interests, confidence, workStyle } = data;
+
+    // Work Style (One-Hot-like encoding)
+    if (workStyle?.environment === 'Solo') vec.env_solo = 1; else vec.env_team = 1;
+    if (workStyle?.structure === 'Structured') vec.struct_structured = 1; else vec.struct_flexible = 1;
+    if (workStyle?.roleType === 'Dynamic') vec.role_dynamic = 1; else vec.role_desk = 1;
+
+    // Interests (Boolean to 1.0)
+    if (interests?.numbers) vec.int_numbers = 1;
+    if (interests?.building) vec.int_building = 1;
+    if (interests?.design) vec.int_design = 1;
+    if (interests?.explaining) vec.int_explaining = 1;
+    if (interests?.logic) vec.int_logic = 1;
+
+    // Confidence (Scale 1-10 to 0.0-1.0)
+    if (confidence) {
+        vec.conf_math = (confidence.math || 1) / 10;
+        vec.conf_coding = (confidence.coding || 1) / 10;
+        vec.conf_communication = (confidence.communication || 1) / 10;
+    }
+
+    return vec;
+};
+
+export const getRecommendations = (data) => {
+    const userVector = createUserVector(data);
+
+    // Calculate similarity with every career
+    const results = Object.entries(CAREER_VECTORS).map(([career, careerVector]) => {
+        const similarity = cosineSimilarity(userVector, careerVector);
+        return {
+            career,
+            score: similarity
+        };
+    });
+
+    // Sort by descending score
+    results.sort((a, b) => b.score - a.score);
+
+    // Return top 3 format
+    return results.slice(0, 3).map(r => ({
+        career: r.career,
+        prob: parseFloat(r.score.toFixed(2)) // Keep precision for UI
+    }));
+};
+

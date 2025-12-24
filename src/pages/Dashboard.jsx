@@ -182,13 +182,19 @@ const Dashboard = () => {
     const location = useLocation();
     const selectedDomain = location.state?.selectedDomain || 'Data Scientist'; // Fallback
 
+    console.log('Dashboard: selectedDomain:', selectedDomain);
     const domainCourses = courses[selectedDomain] || courses['default'];
+
+    if (!domainCourses) {
+        console.error('Dashboard: No domain courses found for', selectedDomain);
+        return <div className="container" style={{ paddingTop: '40px' }}>Error: Course data not found.</div>;
+    }
 
     // Flatten all courses into a single list for easy counting
     const allCourses = [
-        ...domainCourses.beginner,
-        ...domainCourses.intermediate,
-        ...domainCourses.advanced
+        ...(domainCourses.beginner || []),
+        ...(domainCourses.intermediate || []),
+        ...(domainCourses.advanced || [])
     ];
 
     // Map for easy lookup by title
@@ -214,7 +220,17 @@ const Dashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem('completedCourses', JSON.stringify([...completedCourses]));
+        const jsonStats = JSON.stringify([...completedCourses]);
+        localStorage.setItem('completedCourses', jsonStats);
+
+        // Sync to User DB
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            const userDbKey = `db_${userId}`;
+            const userDb = JSON.parse(localStorage.getItem(userDbKey) || '{}');
+            userDb.completedCourses = jsonStats;
+            localStorage.setItem(userDbKey, JSON.stringify(userDb));
+        }
     }, [completedCourses]);
 
     useEffect(() => {
@@ -224,7 +240,18 @@ const Dashboard = () => {
         if (updatedEnrolled.size !== enrolledCourses.size) {
             setEnrolledCourses(updatedEnrolled);
         }
-        localStorage.setItem('enrolledCourses', JSON.stringify([...updatedEnrolled]));
+
+        const jsonStats = JSON.stringify([...updatedEnrolled]);
+        localStorage.setItem('enrolledCourses', jsonStats);
+
+        // Sync to User DB
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            const userDbKey = `db_${userId}`;
+            const userDb = JSON.parse(localStorage.getItem(userDbKey) || '{}');
+            userDb.enrolledCourses = jsonStats;
+            localStorage.setItem(userDbKey, JSON.stringify(userDb));
+        }
     }, [enrolledCourses, completedCourses]);
 
     const toggleCourse = (title) => {
@@ -301,9 +328,57 @@ const Dashboard = () => {
                 </motion.div>
             </div>
 
-            <Section title="Beginner" items={domainCourses.beginner} completedSet={completedCourses} onToggle={toggleCourse} onStart={startCourse} />
-            <Section title="Intermediate" items={domainCourses.intermediate} completedSet={completedCourses} onToggle={toggleCourse} onStart={startCourse} />
-            <Section title="Advanced" items={domainCourses.advanced} completedSet={completedCourses} onToggle={toggleCourse} onStart={startCourse} />
+            <div className="dashboard-grid">
+                {/* Left Column: Free Resources */}
+                <div>
+                    <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', color: 'var(--primary)' }}>Free Resources</h2>
+                    {['beginner', 'intermediate', 'advanced'].map(level => {
+                        const items = (domainCourses[level] || []).filter(c => c.type === 'free');
+                        if (items.length === 0) return null;
+                        return (
+                            <Section
+                                key={level}
+                                title={level.charAt(0).toUpperCase() + level.slice(1)}
+                                items={items}
+                                completedSet={completedCourses}
+                                onToggle={toggleCourse}
+                                onStart={startCourse}
+                            />
+                        );
+                    })}
+                </div>
+
+                {/* Right Column: Paid Courses */}
+                <div>
+                    <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', color: 'var(--accent)' }}>Paid Courses</h2>
+                    {['beginner', 'intermediate', 'advanced'].map(level => {
+                        const items = (domainCourses[level] || []).filter(c => c.type === 'paid');
+                        if (items.length === 0) return null;
+                        return (
+                            <Section
+                                key={level}
+                                title={level.charAt(0).toUpperCase() + level.slice(1)}
+                                items={items}
+                                completedSet={completedCourses}
+                                onToggle={toggleCourse}
+                                onStart={startCourse}
+                            />
+                        );
+                    })}
+                    {/* Placeholder for Paid Courses if empty */}
+                    {Object.values(domainCourses || {}).every(lvl => (lvl || []).filter(c => c.type === 'paid').length === 0) && (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '12px',
+                            border: '1px dashed var(--border-light)'
+                        }}>
+                            <p style={{ color: 'var(--text-muted)' }}>Premium paid courses coming soon.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
 
             <EnrolledModal
                 isOpen={isModalOpen}

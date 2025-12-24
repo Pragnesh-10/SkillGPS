@@ -50,8 +50,18 @@ const Welcome = () => {
         </motion.p>
 
         <motion.button
-          onClick={() => navigate('/survey')}
           className="btn-primary welcome-cta"
+          onClick={() => {
+            // Smart Redirect: Check if user has data
+            const hasProgress = localStorage.getItem('completedCourses') || localStorage.getItem('enrolledCourses');
+            const hasSurveyData = localStorage.getItem('formData');
+
+            if (hasProgress || hasSurveyData) {
+              navigate('/dashboard', { replace: true });
+            } else {
+              navigate('/survey');
+            }
+          }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           variants={itemVariants}
@@ -79,7 +89,7 @@ const Welcome = () => {
           <p>Expert Network</p>
         </div>
       </motion.div>
-    </div>
+    </div >
   );
 };
 

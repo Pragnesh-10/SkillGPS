@@ -70,7 +70,7 @@ const Progress = () => {
 
             const totalCourses = domainCourseList.length;
             const completedInDomain = domainCourseList.filter(c => completedSet.has(c.title)).length;
-            const progress = totalCourses > 0 ? Math.round((completedInDomain / totalCourses) * 100) : 0;
+            const progress = totalCourses > 0 ? Math.min(Math.round((completedInDomain / totalCourses) * 100), 100) : 0;
 
             return {
                 name: domainName,

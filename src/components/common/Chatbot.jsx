@@ -12,7 +12,6 @@ const Chatbot = () => {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-    const [provider, setProvider] = useState('gemini'); // 'gemini' or 'openai'
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -39,7 +38,8 @@ const Chatbot = () => {
         setIsTyping(true);
 
         try {
-            const responseText = await generateAIResponse(text, provider);
+            // Using local static response instead of external AI
+            const responseText = await generateAIResponse(text);
 
             setMessages(prev => [...prev, {
                 id: prev.length + 1,
@@ -49,7 +49,7 @@ const Chatbot = () => {
         } catch (error) {
             setMessages(prev => [...prev, {
                 id: prev.length + 1,
-                text: "Sorry, I encountered an error connecting to the AI service.",
+                text: "Sorry, I encountered an error.",
                 sender: 'bot'
             }]);
         } finally {
@@ -101,13 +101,6 @@ const Chatbot = () => {
                                 <span>SkillGPS Assistant</span>
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                    onClick={() => setProvider(provider === 'gemini' ? 'openai' : 'gemini')}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)' }}
-                                    title={`Switch AI Model (Current: ${provider === 'gemini' ? 'Gemini' : 'ChatGPT'})`}
-                                >
-                                    {provider === 'gemini' ? <Zap size={18} /> : <Cpu size={18} />}
-                                </button>
                                 <button onClick={toggleChat} className="chatbot-close-btn">
                                     <X size={18} />
                                 </button>
