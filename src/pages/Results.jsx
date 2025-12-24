@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getRecommendations } from '../utils/recommendationEngine';
 import { motion } from 'framer-motion';
 import { CheckCircle, Loader } from 'lucide-react';
+import { getCareerRecommendations } from '../services/ai';
 
 const Results = () => {
     const { state } = useLocation();
@@ -11,20 +11,31 @@ const Results = () => {
     const [domains, setDomains] = useState([]);
 
     useEffect(() => {
-        // Simulate AI processing
-        const timer = setTimeout(() => {
+        let cancelled = false;
+
+        (async () => {
             if (state?.formData) {
-                const recs = getRecommendations(state.formData);
-                setDomains(recs);
-                setLoading(false);
+                try {
+                    const preds = await getCareerRecommendations(state.formData);
+                    if (!cancelled) {
+                        // normalize to array of {career, prob}
+                        const arr = preds.map(p => (typeof p === 'string' ? { career: p, prob: 1 } : p));
+                        setDomains(arr);
+                    }
+                } catch (err) {
+                    console.error('Error fetching recommendations', err);
+                    if (!cancelled) setDomains([{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }]);
+                } finally {
+                    if (!cancelled) setLoading(false);
+                }
             } else {
                 // Fallback for direct access without data
-                setDomains(['Data Scientist', 'Backend Developer', 'UI/UX Designer']);
+                setDomains([{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }]);
                 setLoading(false);
             }
-        }, 2500);
+        })();
 
-        return () => clearTimeout(timer);
+        return () => { cancelled = true; } ;
     }, [state]);
 
     const handleDomainSelect = (domain) => {
@@ -76,9 +87,9 @@ const Results = () => {
                 animate={{ opacity: 1 }}
                 transition={{ staggerChildren: 0.15 }}
             >
-                {domains.map((domain, index) => (
+                {domains.map((d, index) => (
                     <motion.div
-                        key={domain}
+                        key={d.career}
                         className="card"
                         style={{
                             display: 'flex',
@@ -101,23 +112,26 @@ const Results = () => {
                             background: index === 0 ? 'var(--gradient-main)' : 'var(--border-light)'
                         }}></div>
 
-                        <h3 style={{ fontSize: '1.5rem', marginBottom: '12px', marginTop: '12px' }}>{domain}</h3>
-                        <p style={{ color: 'var(--text-muted)', marginBottom: '24px', flex: 1 }}>
-                            {domain === 'UI/UX Designer' ? 'Design intuitive interfaces and craft seamless user experiences.' :
-                                domain === 'Data Scientist' ? 'Analyze complex data sets to solve business problems using ML.' :
-                                    domain === 'Backend Developer' ? 'Build robust server-side applications and scalable APIs.' :
+                        <h3 style={{ fontSize: '1.5rem', marginBottom: '12px', marginTop: '12px' }}>{d.career}</h3>
+                        <p style={{ color: 'var(--text-muted)', marginBottom: '8px', flex: 1 }}>
+                            {d.career === 'UI/UX Designer' ? 'Design intuitive interfaces and craft seamless user experiences.' :
+                                d.career === 'Data Scientist' ? 'Analyze complex data sets to solve business problems using ML.' :
+                                    d.career === 'Backend Developer' ? 'Build robust server-side applications and scalable APIs.' :
                                         'A great career path matching your logical and analytical skills.'}
                         </p>
 
-                        <motion.button
-                            className="btn-primary"
-                            style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }}
-                            onClick={() => handleDomainSelect(domain)}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            Start Learning Path
-                        </motion.button>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <motion.button
+                                className="btn-primary"
+                                style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}
+                                onClick={() => handleDomainSelect(d.career)}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Start Learning Path
+                            </motion.button>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{Math.round((d.prob || 1) * 100)}% match</div>
+                        </div>
 
                         {index === 0 && (
                             <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>

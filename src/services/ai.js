@@ -41,3 +41,24 @@ export const generateAIResponse = async (prompt, provider = 'gemini') => {
         return `Error: ${error.message}. Please checking your API keys.`;
     }
 };
+
+// Call the server-side ML inference API. Falls back to local rule-based engine if the API is unreachable.
+export const getCareerRecommendations = async (formData) => {
+    const base = import.meta.env.VITE_ML_API_BASE || 'http://localhost:8000';
+    try {
+        const res = await fetch(`${base}/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        if (!res.ok) throw new Error('Inference API returned ' + res.status);
+        const json = await res.json();
+        return json.predictions; // [{ career, prob }, ...]
+    } catch (err) {
+        console.warn('ML API failed, falling back to local engine:', err.message);
+        // fallback to local rule-based engine
+        const { getRecommendations } = await import('../utils/recommendationEngine');
+        const recs = getRecommendations(formData);
+        return recs.map(d => ({ career: d, prob: 1.0 }));
+    }
+};
