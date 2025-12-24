@@ -35,6 +35,7 @@ def make_small_jsonl(path):
             "label": "Backend Developer"
         }
     ]
+    samples = samples * 2  # Duplicate to have 8 samples total
     with open(path, 'w') as f:
         for s in samples:
             f.write(json.dumps(s) + '\n')
@@ -46,6 +47,6 @@ def test_train_saves_model(tmp_path):
     make_small_jsonl(str(data_path))
 
     # Run training script
-    res = subprocess.run(['python', 'train.py', '--input', str(data_path), '--out', str(model_path), '--test-size', '0.5'], cwd=os.path.join(os.getcwd()), capture_output=True, text=True)
+    res = subprocess.run(['python', 'train.py', '--input', str(data_path), '--out', str(model_path), '--test-size', '0.5', '--cv-folds', '2'], cwd=os.path.join(os.getcwd()), capture_output=True, text=True)
     assert res.returncode == 0, f"Training script failed: {res.stdout}\n{res.stderr}"
     assert model_path.exists()
