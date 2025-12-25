@@ -315,6 +315,19 @@ const Dashboard = () => {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <button
+                                onClick={() => {
+                                    if (window.confirm("Retaking the survey will reset your progress. Continue?")) {
+                                        localStorage.removeItem('formData');
+                                        localStorage.removeItem('completedCourses');
+                                        localStorage.removeItem('enrolledCourses');
+                                        window.location.href = '/survey';
+                                    }
+                                }}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.8rem', marginBottom: '8px', display: 'block' }}
+                            >
+                                Retake Survey
+                            </button>
+                            <button
                                 onClick={() => setIsModalOpen(true)}
                                 style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.9rem', marginBottom: '4px', display: 'block' }}
                             >
