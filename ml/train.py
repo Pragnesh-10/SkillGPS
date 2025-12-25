@@ -3,17 +3,15 @@ Train a baseline classifier from the bootstrap JSONL dataset and save model + pr
 Usage:
   python train.py --input ml/data/bootstrap.jsonl --out ml/models/rf_baseline.joblib
 
-Produces a joblib file with keys: 'model' and 'preprocessor' (ColumnTransformer + label encoder)
+Produces a joblib file with keys: 'model' and 'preprocessor' (DictVectorizer)
 """
 
 import argparse
 import json
-import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, top_k_accuracy_score, classification_report
 import joblib
@@ -28,9 +26,10 @@ def load_jsonl(path):
     return rows
 
 
-def prepare_df(rows):
+def prepare_data(rows):
     # Flatten structure
-    recs = []
+    X = []
+    y = []
     for r in rows:
         row = {}
         # interests
@@ -45,9 +44,11 @@ def prepare_df(rows):
         # intent
         for k, v in r.get('intent', {}).items():
             row[f'intent_{k}'] = v
-        row['label'] = r.get('label')
-        recs.append(row)
-    return pd.DataFrame(recs)
+        
+        X.append(row)
+        y.append(r.get('label'))
+    
+    return np.array(X), np.array(y)
 
 
 def main():
@@ -67,23 +68,12 @@ def main():
         print("Please run 'node ml/generate_bootstrap.js' first.")
         return
 
-    df = prepare_df(rows)
-    print(f"Loaded {len(df)} samples.")
-
-    X = df.drop(columns=['label'])
-    y = df['label']
-
-    # Categorical columns to one-hot
-    categorical_cols = [c for c in X.columns if c.startswith('ws_') or c.startswith('intent_')]
+    X, y = prepare_data(rows)
+    print(f"Loaded {len(X)} samples.")
     
-    # Preprocessing pipeline
-    preprocessor = ColumnTransformer([
-        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols),
-    ], remainder='passthrough')
-
-    # Base pipeline
+    # Base pipeline with DictVectorizer
     pipeline = Pipeline([
-        ('pre', preprocessor),
+        ('vect', DictVectorizer(sparse=False)),
         ('rf', RandomForestClassifier(random_state=42, n_jobs=args.n_jobs))
     ])
 
@@ -97,10 +87,10 @@ def main():
     # --- 2. Hyperparameter Tuning (GridSearchCV) ---
     print("Starting Hyperparameter Tuning (GridSearchCV)...")
     param_grid = {
-        'rf__n_estimators': [50, 100, 200],
-        'rf__max_depth': [None, 10, 20],
-        'rf__min_samples_split': [2, 5],
-        'rf__class_weight': [None, 'balanced']
+        'rf__n_estimators': [100],
+        'rf__max_depth': [20],
+        'rf__min_samples_split': [5],
+        'rf__class_weight': [None]
     }
     
     grid_search = GridSearchCV(pipeline, param_grid, cv=args.cv_folds, n_jobs=args.n_jobs, verbose=1, scoring='accuracy')
@@ -129,9 +119,8 @@ def main():
     print(classification_report(y_test, preds))
 
     # --- 4. Save Model ---
-    # We save the Best Estimator found by GridSearch
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    joblib.dump({'model_pipeline': best_model}, args.out)
+    joblib.dump({'model_pipeline': best_model}, args.out, compress=3)
     print(f'Saved best model to {args.out}')
 
 

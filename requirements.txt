@@ -1,8 +1,4 @@
 fastapi
-uvicorn[standard]
 joblib
-pandas
+
 scikit-learn
-python-multipart
-pytest
-httpx

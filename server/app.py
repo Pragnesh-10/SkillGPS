@@ -57,8 +57,8 @@ def predict(s: Survey):
     for k, v in s.intent.items():
         row[f'intent_{k}'] = v
 
-    import pandas as pd
-    X = pd.DataFrame([row])
+    # X = pd.DataFrame([row]) # No longer needed
+    X = [row]
 
     probs = model.predict_proba(X)[0]
     classes = list(model.classes_)
