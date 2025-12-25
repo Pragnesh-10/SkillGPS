@@ -5,11 +5,11 @@
     "rewrites": [
         {
             "source": "/predict",
-            "destination": "/server/app.py"
+            "destination": "/api/index.py"
         },
         {
             "source": "/visitor-count",
-            "destination": "/server/app.py"
+            "destination": "/api/index.py"
         },
         {
             "source": "/(.*)",
@@ -17,7 +17,7 @@
         }
     ],
     "functions": {
-        "server/app.py": {
+        "api/index.py": {
             "maxDuration": 10
         }
     }
