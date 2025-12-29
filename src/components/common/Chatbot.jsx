@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Sparkles, Cpu, Zap } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
 
@@ -28,6 +28,16 @@ const Chatbot = () => {
     }, [messages, isTyping]);
 
     const toggleChat = () => setIsOpen(!isOpen);
+
+    const resetChat = () => {
+        setMessages([
+            { id: 1, text: "Hi there! I'm your SkillGPS Assistant. How can I help you today?", sender: 'bot' }
+        ]);
+        setInteractionMode('normal');
+        setCurrentContext({ domain: null, questionIndex: null });
+        setInputValue('');
+        setIsTyping(false);
+    };
 
     const addBotMessage = (text) => {
         setMessages(prev => [...prev, {
@@ -234,72 +244,76 @@ const Chatbot = () => {
                                 <span>SkillGPS Assistant</span>
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                                <button onClick={toggleChat} className="chatbot-close-btn">
-                                    <X size={18} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="chatbot-messages">
-                            {messages.map((msg) => (
-                                <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
-                                    {msg.text}
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button onClick={resetChat} className="chatbot-close-btn" title="Start New Chat">
+                                        <RefreshCw size={18} />
+                                    </button>
+                                    <button onClick={toggleChat} className="chatbot-close-btn">
+                                        <X size={18} />
+                                    </button>
                                 </div>
-                            ))}
-                            {isTyping && (
-                                <div className="message message-bot">
-                                    <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
-                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
-                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
-                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
-                                    </span>
+                            </div>
+
+                            <div className="chatbot-messages">
+                                {messages.map((msg) => (
+                                    <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
+                                        {msg.text}
+                                    </div>
+                                ))}
+                                {isTyping && (
+                                    <div className="message message-bot">
+                                        <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
+                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
+                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
+                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
+                                        </span>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {messages.length < 3 && interactionMode === 'normal' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="Recommend a course" />
+                                    <QuickAction text="Interview tips" />
+                                    <QuickAction text="Career advice" />
                                 </div>
                             )}
-                            <div ref={messagesEndRef} />
-                        </div>
 
-                        {messages.length < 3 && interactionMode === 'normal' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="Recommend a course" />
-                                <QuickAction text="Interview tips" />
-                                <QuickAction text="Career advice" />
+                            {interactionMode === 'selecting_domain' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    {(() => {
+                                        const saved = localStorage.getItem('suggestedDomains');
+                                        let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
+                                        if (domains.length === 0) domains = Object.keys(interviewQuestions);
+
+                                        return domains.map(d => (
+                                            <QuickAction key={d} text={d} />
+                                        ));
+                                    })()}
+                                </div>
+                            )}
+
+                            {interactionMode === 'post_answer' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="Yes, please" />
+                                    <QuickAction text="No, thanks" />
+                                </div>
+                            )}
+
+                            <div className="chatbot-input-area">
+                                <input
+                                    type="text"
+                                    placeholder={interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything..."}
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    className="chatbot-input"
+                                />
+                                <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
+                                    <Send size={18} />
+                                </button>
                             </div>
-                        )}
-
-                        {interactionMode === 'selecting_domain' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                {(() => {
-                                    const saved = localStorage.getItem('suggestedDomains');
-                                    let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
-                                    if (domains.length === 0) domains = Object.keys(interviewQuestions);
-
-                                    return domains.map(d => (
-                                        <QuickAction key={d} text={d} />
-                                    ));
-                                })()}
-                            </div>
-                        )}
-
-                        {interactionMode === 'post_answer' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="Yes, please" />
-                                <QuickAction text="No, thanks" />
-                            </div>
-                        )}
-
-                        <div className="chatbot-input-area">
-                            <input
-                                type="text"
-                                placeholder={interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything..."}
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                className="chatbot-input"
-                            />
-                            <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
-                                <Send size={18} />
-                            </button>
-                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
