@@ -189,6 +189,77 @@ const Chatbot = () => {
                 return;
             }
 
+            // 5. CAREEER ADVISOR MODE
+            // Trigger
+            if (interactionMode === 'normal' && (
+                text.toLowerCase().includes('career advice') ||
+                text.toLowerCase().includes('guide me') ||
+                text.toLowerCase().includes('help me choose')
+            )) {
+                setTimeout(() => {
+                    addBotMessage("I'd love to help you find your path! Let's start with a simple question.");
+                    addBotMessage("Do you prefer working with technology/code or do you prefer design/strategy?");
+                    setInteractionMode('career_advisor');
+                    setCurrentContext({ step: 'start' });
+                    setIsTyping(false);
+                }, 800);
+                return;
+            }
+
+            if (interactionMode === 'career_advisor') {
+                setTimeout(() => {
+                    const lowerText = text.toLowerCase();
+                    const { step } = currentContext;
+
+                    if (step === 'start') {
+                        if (lowerText.includes('tech') || lowerText.includes('code')) {
+                            addBotMessage("Great! In the technical realm, what interests you more?");
+                            addBotMessage("1. Building visual interfaces (Websites)");
+                            addBotMessage("2. Logic and data handling (Backend/APIs)");
+                            addBotMessage("3. Analyzing patterns in data (Data Science)");
+                            setCurrentContext({ step: 'technical' });
+                        } else if (lowerText.includes('design') || lowerText.includes('strategy') || lowerText.includes('creative')) {
+                            addBotMessage("Awesome! Which sounds more appealing?");
+                            addBotMessage("1. Designing user interfaces and experiences (UI/UX)");
+                            addBotMessage("2. Defining product strategy and roadmaps (Product Management)");
+                            setCurrentContext({ step: 'creative' });
+                        } else {
+                            addBotMessage("I didn't quite catch that. Do you prefer 'Technology' or 'Design/Strategy'?");
+                        }
+                    } else if (step === 'technical') {
+                        let recommendation = null;
+                        if (lowerText.includes('visual') || lowerText.includes('web') || lowerText.includes('frontend')) recommendation = "Frontend Developer";
+                        else if (lowerText.includes('logic') || lowerText.includes('backend') || lowerText.includes('api')) recommendation = "Backend Developer";
+                        else if (lowerText.includes('data') || lowerText.includes('analyz') || lowerText.includes('science')) recommendation = "Data Scientist";
+
+                        if (recommendation) {
+                            addBotMessage(`Based on your interest, I recommend checking out **${recommendation}**.`);
+                            addBotMessage("Would you like to practice some interview questions for this role?");
+                            setInteractionMode('selecting_domain'); // Reuse logic!
+                            addBotMessage(`Type "${recommendation}" to start practicing, or "no" to explore other options.`);
+                            setInteractionMode('normal'); // Reset to normal so they can type the domain
+                        } else {
+                            addBotMessage("Please choose: Visual, Backend, or Data.");
+                        }
+                    } else if (step === 'creative') {
+                        let recommendation = null;
+                        if (lowerText.includes('design') || lowerText.includes('ui') || lowerText.includes('ux')) recommendation = "UI/UX Designer";
+                        else if (lowerText.includes('product') || lowerText.includes('management') || lowerText.includes('strategy')) recommendation = "Product Manager";
+
+                        if (recommendation) {
+                            addBotMessage(`Based on your interest, I recommend checking out **${recommendation}**.`);
+                            addBotMessage(`Type "${recommendation}" to start practicing interview questions!`);
+                            setInteractionMode('normal');
+                        } else {
+                            addBotMessage("Please choose: Design or Product Management.");
+                        }
+                    }
+
+                    setIsTyping(false);
+                }, 800);
+                return;
+            }
+
             // Start Normal AI Response
             const responseText = await generateAIResponse(text);
             addBotMessage(responseText);
@@ -273,12 +344,33 @@ const Chatbot = () => {
                         </div>
 
                         {messages.length < 3 && interactionMode === 'normal' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
                                 <QuickAction text="Recommend a course" />
-                                <QuickAction text="Interview tips" />
+                                <QuickAction text="Interview Questions" />
                                 <QuickAction text="Career advice" />
                             </div>
                         )}
+
+                        {interactionMode === 'career_advisor' && currentContext.step === 'start' && (
+                           <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                               <QuickAction text="Technology / Code" />
+                               <QuickAction text="Design / Strategy" />
+                           </div>
+                       )}
+
+                       {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
+                           <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                               <QuickAction text="Visual (Frontend)" />
+                               <QuickAction text="Logic (Backend)" />
+                               <QuickAction text="Data Science" />
+                           </div>
+                       )}
+
+                       {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
+                           <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                               <QuickAction text="UI/UX Design" />
+                               <QuickAction text="Product Management" />
+                           </div>
+                       )}
 
                         {interactionMode === 'selecting_domain' && (
                             <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -321,7 +413,7 @@ const Chatbot = () => {
             <button onClick={toggleChat} className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}>
                 {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
             </button>
-        </div>
+        </div >
     );
 };
 
