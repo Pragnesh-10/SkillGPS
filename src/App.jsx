@@ -11,8 +11,11 @@ import Subscription from './pages/Subscription';
 import Progress from './pages/Progress';
 import Chatbot from './components/common/Chatbot';
 import Header from './components/common/Header';
+import { useCodeProtection } from './hooks/useCodeProtection';
 
 function App() {
+  useCodeProtection();
+
   return (
     <Router>
       <Header />

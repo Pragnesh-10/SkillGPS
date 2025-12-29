@@ -1,9 +1,9 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles, Cpu, Zap } from 'lucide-react';
 import './Chatbot.css';
+import { interviewQuestions } from '../../data/interviewQuestions';
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +12,11 @@ const Chatbot = () => {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+
+    // Interaction Modes: 'normal', 'selecting_domain', 'answering_question', 'post_answer'
+    const [interactionMode, setInteractionMode] = useState('normal');
+    const [currentContext, setCurrentContext] = useState({ domain: null, questionIndex: null });
+
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -23,6 +28,14 @@ const Chatbot = () => {
     }, [messages, isTyping]);
 
     const toggleChat = () => setIsOpen(!isOpen);
+
+    const addBotMessage = (text) => {
+        setMessages(prev => [...prev, {
+            id: prev.length + 1,
+            text: text,
+            sender: 'bot'
+        }]);
+    };
 
     const handleSendMessage = async (text = inputValue) => {
         if (!text.trim()) return;
@@ -38,22 +51,115 @@ const Chatbot = () => {
         setIsTyping(true);
 
         try {
-            // Using local static response instead of external AI
-            const responseText = await generateAIResponse(text);
+            // INTERVIEW MODE LOGIC
+            // 1. Trigger Interview Mode
+            if (interactionMode === 'normal' && (text.toLowerCase().includes('interview') || text.toLowerCase().includes('question'))) {
+                setTimeout(() => {
+                    const savedDomains = localStorage.getItem('suggestedDomains');
+                    let domains = [];
+                    if (savedDomains) {
+                        try {
+                            const parsed = JSON.parse(savedDomains);
+                            domains = parsed.map(d => d.career);
+                        } catch (e) {
+                            console.error("Failed to parse suggested domains", e);
+                        }
+                    }
 
-            setMessages(prev => [...prev, {
-                id: prev.length + 1,
-                text: responseText,
-                sender: 'bot'
-            }]);
+                    // Fallback if no domains found
+                    if (domains.length === 0) {
+                        domains = Object.keys(interviewQuestions);
+                    }
+
+                    addBotMessage("Great! Let's practice some interview questions. Based on your profile, here are some suggested domains:");
+
+                    // Show domains as buttons (handled in render, but we can also just list them textually or add a special message type)
+                    // For now, let's just list them and ask user to type/click
+                    // Actually, let's use a special "system" message or just text
+                    const domainList = domains.join(', ');
+                    addBotMessage(`Which domain would you like to practice? (${domainList})`);
+
+                    setInteractionMode('selecting_domain');
+                    setIsTyping(false);
+                }, 800);
+                return;
+            }
+
+            // 2. Select Domain
+            if (interactionMode === 'selecting_domain') {
+                setTimeout(() => {
+                    const selectedDomain = Object.keys(interviewQuestions).find(d =>
+                        text.toLowerCase().includes(d.toLowerCase())
+                    );
+
+                    if (selectedDomain) {
+                        const questions = interviewQuestions[selectedDomain];
+                        const randomIndex = Math.floor(Math.random() * questions.length);
+                        const questionObj = questions[randomIndex];
+
+                        setCurrentContext({ domain: selectedDomain, questionIndex: randomIndex });
+                        addBotMessage(`Okay, here is a ${selectedDomain} interview question:`);
+                        addBotMessage(questionObj.question);
+                        addBotMessage("Please type your answer below.");
+
+                        setInteractionMode('answering_question');
+                    } else {
+                        addBotMessage("I didn't recognize that domain. Please choose from: " + Object.keys(interviewQuestions).join(', '));
+                    }
+                    setIsTyping(false);
+                }, 800);
+                return;
+            }
+
+            // 3. Answer Question
+            if (interactionMode === 'answering_question') {
+                setTimeout(() => {
+                    const { domain, questionIndex } = currentContext;
+                    const questionObj = interviewQuestions[domain][questionIndex];
+
+                    addBotMessage(`Your Answer: ${text}`);
+                    addBotMessage("Here is the correct answer/explanation:");
+                    addBotMessage(questionObj.answer);
+                    addBotMessage(`Explanation: ${questionObj.explanation}`);
+
+                    addBotMessage("Would you like another question? (Yes/No)");
+                    setInteractionMode('post_answer');
+                    setIsTyping(false);
+                }, 1000);
+                return;
+            }
+
+            // 4. Post Answer Decision
+            if (interactionMode === 'post_answer') {
+                setTimeout(() => {
+                    if (text.toLowerCase().includes('yes') || text.toLowerCase().includes('sure') || text.toLowerCase().includes('ok')) {
+                        // Repeat selection or random from same domain? Let's use same domain for continuity
+                        const questions = interviewQuestions[currentContext.domain];
+                        const randomIndex = Math.floor(Math.random() * questions.length);
+                        const questionObj = questions[randomIndex];
+
+                        setCurrentContext(prev => ({ ...prev, questionIndex: randomIndex }));
+                        addBotMessage(`Here is another question for ${currentContext.domain}:`);
+                        addBotMessage(questionObj.question);
+                        setInteractionMode('answering_question');
+                    } else {
+                        addBotMessage("Alright! Let me know if you need anything else.");
+                        setInteractionMode('normal');
+                        setCurrentContext({ domain: null, questionIndex: null });
+                    }
+                    setIsTyping(false);
+                }, 800);
+                return;
+            }
+
+            // Start Normal AI Response
+            const responseText = await generateAIResponse(text);
+            addBotMessage(responseText);
+
         } catch (error) {
-            setMessages(prev => [...prev, {
-                id: prev.length + 1,
-                text: "Sorry, I encountered an error.",
-                sender: 'bot'
-            }]);
+            addBotMessage("Sorry, I encountered an error.");
         } finally {
-            setIsTyping(false);
+            if (interactionMode === 'normal') setIsTyping(false);
         }
     };
 
@@ -125,7 +231,7 @@ const Chatbot = () => {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {messages.length < 3 && (
+                        {messages.length < 3 && interactionMode === 'normal' && (
                             <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
                                 <QuickAction text="Recommend a course" />
                                 <QuickAction text="Interview tips" />
@@ -133,10 +239,31 @@ const Chatbot = () => {
                             </div>
                         )}
 
+                        {interactionMode === 'selecting_domain' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                {(() => {
+                                    const saved = localStorage.getItem('suggestedDomains');
+                                    let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
+                                    if (domains.length === 0) domains = Object.keys(interviewQuestions);
+
+                                    return domains.map(d => (
+                                        <QuickAction key={d} text={d} />
+                                    ));
+                                })()}
+                            </div>
+                        )}
+
+                        {interactionMode === 'post_answer' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Yes, please" />
+                                <QuickAction text="No, thanks" />
+                            </div>
+                        )}
+
                         <div className="chatbot-input-area">
                             <input
                                 type="text"
-                                placeholder="Ask anything..."
+                                placeholder={interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything..."}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onKeyPress={handleKeyPress}

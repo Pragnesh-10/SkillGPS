@@ -19,23 +19,31 @@ const Results = () => {
                     const preds = await getCareerRecommendations(state.formData);
                     if (!cancelled) {
                         // normalize to array of {career, prob}
+                        // normalize to array of {career, prob}
                         const arr = preds.map(p => (typeof p === 'string' ? { career: p, prob: 1 } : p));
                         setDomains(arr);
+                        localStorage.setItem('suggestedDomains', JSON.stringify(arr));
                     }
                 } catch (err) {
                     console.error('Error fetching recommendations', err);
-                    if (!cancelled) setDomains([{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }]);
+                    if (!cancelled) {
+                        const fallbacks = [{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }];
+                        setDomains(fallbacks);
+                        localStorage.setItem('suggestedDomains', JSON.stringify(fallbacks));
+                    }
                 } finally {
                     if (!cancelled) setLoading(false);
                 }
             } else {
                 // Fallback for direct access without data
-                setDomains([{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }]);
+                const fallbacks = [{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }];
+                setDomains(fallbacks);
+                localStorage.setItem('suggestedDomains', JSON.stringify(fallbacks));
                 setLoading(false);
             }
         })();
 
-        return () => { cancelled = true; } ;
+        return () => { cancelled = true; };
     }, [state]);
 
     const handleDomainSelect = (domain) => {
