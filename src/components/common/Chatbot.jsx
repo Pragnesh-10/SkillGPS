@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
 
@@ -12,6 +12,39 @@ const Chatbot = () => {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+
+    // Lightweight NLP helpers for answer matching
+    const STOP_WORDS = useRef(new Set([
+        'the', 'is', 'in', 'at', 'of', 'a', 'an', 'and', 'or', 'to', 'for', 'on', 'with', 'that', 'this', 'it', 'as', 'be'
+    ]));
+
+    const tokenize = (text) => {
+        return text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter(token => !STOP_WORDS.current.has(token));
+    };
+
+    const jaccardSimilarity = (userText, referenceText) => {
+        const userTokens = new Set(tokenize(userText));
+        const refTokens = new Set(tokenize(referenceText));
+        if (userTokens.size === 0 || refTokens.size === 0) return 0;
+
+        let intersection = 0;
+        userTokens.forEach(token => {
+            if (refTokens.has(token)) intersection += 1;
+        });
+
+        const union = new Set([...userTokens, ...refTokens]).size;
+        return intersection / union;
+    };
+
+    // Voice State
+    const [isListening, setIsListening] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const recognitionRef = useRef(null);
 
     // Interaction Modes: 'normal', 'selecting_domain', 'answering_question', 'post_answer'
     const [interactionMode, setInteractionMode] = useState('normal');
@@ -27,6 +60,58 @@ const Chatbot = () => {
         scrollToBottom();
     }, [messages, isTyping]);
 
+    // Initialize Speech Recognition
+    useEffect(() => {
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new window.webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                setInputValue(transcript);
+                handleSendMessage(transcript);
+                setIsListening(false);
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error", event.error);
+                setIsListening(false);
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+        }
+    }, []);
+
+    const toggleListening = () => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+        } else {
+            recognitionRef.current?.start();
+            setIsListening(true);
+        }
+    };
+
+    const speakText = (text) => {
+        if (!isMuted && 'speechSynthesis' in window) {
+            // Cancel any current speech
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            // Select a voice if available (optional)
+            // const voices = window.speechSynthesis.getVoices();
+            // utterance.voice = voices[0]; 
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    };
+
     const toggleChat = () => setIsOpen(!isOpen);
 
     const resetChat = () => {
@@ -40,11 +125,15 @@ const Chatbot = () => {
     };
 
     const addBotMessage = (text) => {
-        setMessages(prev => [...prev, {
-            id: prev.length + 1,
+        const newMsg = {
+            id: messages.length + 1, // Be careful with this id logic, better to use prev reference inside
             text: text,
             sender: 'bot'
-        }]);
+        };
+        // Re-calculate ID safely inside setMessages
+        setMessages(prev => [...prev, { ...newMsg, id: prev.length + 1 }]);
+
+        speakText(text);
     };
 
     const handleSendMessage = async (text = inputValue) => {
@@ -154,12 +243,21 @@ const Chatbot = () => {
                     const { domain, questionIndex } = currentContext;
                     const questionObj = interviewQuestions[domain][questionIndex];
 
-                    addBotMessage(`Your Answer: ${text}`);
-                    addBotMessage("Here is the correct answer/explanation:");
-                    addBotMessage(questionObj.answer);
-                    addBotMessage(`Explanation: ${questionObj.explanation}`);
+                    const referenceText = `${questionObj.answer} ${questionObj.explanation}`;
+                    const similarityScore = jaccardSimilarity(text, referenceText);
+                    const isLikelyCorrect = similarityScore >= 0.32;
 
-                    addBotMessage("Would you like another question? (Yes/No)");
+                    addBotMessage(`Your answer: ${text}`);
+
+                    if (isLikelyCorrect) {
+                        addBotMessage("Good, keep it on! Your answer matches what I expect. Can we move to the next question? (Yes/No)");
+                    } else {
+                        addBotMessage("Here is an ideal answer you can compare against:");
+                        addBotMessage(questionObj.answer);
+                        addBotMessage(`Explanation: ${questionObj.explanation}`);
+                        addBotMessage("Would you like to try another question? (Yes/No)");
+                    }
+
                     setInteractionMode('post_answer');
                     setIsTyping(false);
                 }, 1000);
@@ -315,7 +413,9 @@ const Chatbot = () => {
                                 <span>SkillGPS Assistant</span>
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
-
+                                <button onClick={() => setIsMuted(!isMuted)} className="chatbot-close-btn" title={isMuted ? "Unmute Text-to-Speech" : "Mute Text-to-Speech"}>
+                                    {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                                </button>
                                 <button onClick={resetChat} className="chatbot-close-btn" title="Start New Chat">
                                     <RefreshCw size={18} />
                                 </button>
@@ -323,90 +423,100 @@ const Chatbot = () => {
                                     <X size={18} />
                                 </button>
                             </div>
-                        </div>
 
-                        <div className="chatbot-messages">
-                            {messages.map((msg) => (
-                                <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
-                                    {msg.text}
-                                </div>
-                            ))}
-                            {isTyping && (
-                                <div className="message message-bot">
-                                    <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
-                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
-                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
-                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
-                                    </span>
+                            <div className="chatbot-messages">
+                                {messages.map((msg) => (
+                                    <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
+                                        {msg.text}
+                                    </div>
+                                ))}
+                                {isTyping && (
+                                    <div className="message message-bot">
+                                        <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
+                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
+                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
+                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
+                                        </span>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {messages.length < 3 && interactionMode === 'normal' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="Recommend a course" />
+                                    <QuickAction text="Interview Questions" />
+                                    <QuickAction text="Career advice" />
                                 </div>
                             )}
-                            <div ref={messagesEndRef} />
-                        </div>
 
-                        {messages.length < 3 && interactionMode === 'normal' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="Recommend a course" />
-                                <QuickAction text="Interview Questions" />
-                                <QuickAction text="Career advice" />
+                            {interactionMode === 'career_advisor' && currentContext.step === 'start' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="Technology / Code" />
+                                    <QuickAction text="Design / Strategy" />
+                                </div>
+                            )}
+
+                            {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="Visual (Frontend)" />
+                                    <QuickAction text="Logic (Backend)" />
+                                    <QuickAction text="Data Science" />
+                                </div>
+                            )}
+
+                            {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="UI/UX Design" />
+                                    <QuickAction text="Product Management" />
+                                </div>
+                            )}
+
+                            {interactionMode === 'selecting_domain' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    {(() => {
+                                        const saved = localStorage.getItem('suggestedDomains');
+                                        let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
+                                        if (domains.length === 0) domains = Object.keys(interviewQuestions);
+
+                                        return domains.map(d => (
+                                            <QuickAction key={d} text={d} />
+                                        ));
+                                    })()}
+                                </div>
+                            )}
+
+                            {interactionMode === 'post_answer' && (
+                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                    <QuickAction text="Yes, please" />
+                                    <QuickAction text="No, thanks" />
+                                </div>
+                            )}
+
+                            <div className="chatbot-input-area">
+                                <div style={{ display: 'flex', gap: '8px', width: '100%', alignItems: 'center' }}>
+                                    <button
+                                        onClick={toggleListening}
+                                        className={`chatbot-send-btn ${isListening ? 'listening' : ''}`}
+                                        style={{ background: isListening ? '#ef4444' : 'rgba(255,255,255,0.1)' }}
+                                        title="Speak"
+                                    >
+                                        {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                                    </button>
+                                    <input
+                                        type="text"
+                                        placeholder={isListening ? "Listening..." : (interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything...")}
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        className="chatbot-input"
+                                        style={{ flex: 1 }}
+                                    />
+                                    <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
+                                        <Send size={18} />
+                                    </button>
+                                </div>
                             </div>
-                        )}
-
-                        {interactionMode === 'career_advisor' && currentContext.step === 'start' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="Technology / Code" />
-                                <QuickAction text="Design / Strategy" />
-                            </div>
-                        )}
-
-                        {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="Visual (Frontend)" />
-                                <QuickAction text="Logic (Backend)" />
-                                <QuickAction text="Data Science" />
-                            </div>
-                        )}
-
-                        {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="UI/UX Design" />
-                                <QuickAction text="Product Management" />
-                            </div>
-                        )}
-
-                        {interactionMode === 'selecting_domain' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                {(() => {
-                                    const saved = localStorage.getItem('suggestedDomains');
-                                    let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
-                                    if (domains.length === 0) domains = Object.keys(interviewQuestions);
-
-                                    return domains.map(d => (
-                                        <QuickAction key={d} text={d} />
-                                    ));
-                                })()}
-                            </div>
-                        )}
-
-                        {interactionMode === 'post_answer' && (
-                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                <QuickAction text="Yes, please" />
-                                <QuickAction text="No, thanks" />
-                            </div>
-                        )}
-
-                        <div className="chatbot-input-area">
-                            <input
-                                type="text"
-                                placeholder={interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything..."}
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                className="chatbot-input"
-                            />
-                            <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
-                                <Send size={18} />
-                            </button>
-                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
