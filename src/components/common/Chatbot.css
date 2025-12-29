@@ -30,10 +30,10 @@
 }
 
 .chatbot-window {
-    width: 420px;
-    height: 600px;
-    max-width: 95vw;
-    max-height: 80vh;
+    width: 380px;
+    height: 540px;
+    max-width: 92vw;
+    max-height: 78vh;
     background: var(--bg-card);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
@@ -160,6 +160,25 @@
 
 .chatbot-send-btn:hover {
     transform: scale(1.05);
+}
+
+@media (max-width: 480px) {
+    .chatbot-window {
+        width: 92vw;
+        height: 70vh;
+        margin-bottom: 12px;
+    }
+
+    .chatbot-toggle-btn {
+        width: 54px;
+        height: 54px;
+    }
+
+    .chatbot-upload-btn,
+    .chatbot-send-btn {
+        width: 36px;
+        height: 36px;
+    }
 }
 
 .chatbot-upload-btn {
