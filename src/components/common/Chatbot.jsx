@@ -3,11 +3,12 @@ import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX, Upload } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import mammoth from 'mammoth/mammoth.browser';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
