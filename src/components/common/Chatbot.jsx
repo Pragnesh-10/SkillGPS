@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX, Upload } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
 
@@ -12,6 +12,7 @@ const Chatbot = () => {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [resumeText, setResumeText] = useState('');
 
     // Lightweight NLP helpers for answer matching
     const STOP_WORDS = useRef(new Set([
@@ -27,24 +28,48 @@ const Chatbot = () => {
             .filter(token => !STOP_WORDS.current.has(token));
     };
 
-    const jaccardSimilarity = (userText, referenceText) => {
-        const userTokens = new Set(tokenize(userText));
-        const refTokens = new Set(tokenize(referenceText));
-        if (userTokens.size === 0 || refTokens.size === 0) return 0;
+    // Lightweight NLP: combine Jaccard overlap + keyword coverage for rough correctness scoring
+    const evaluateAnswer = (userText, referenceText) => {
+        const userTokensArr = tokenize(userText);
+        const refTokensArr = tokenize(referenceText);
+
+        const userTokens = new Set(userTokensArr);
+        const refTokens = new Set(refTokensArr);
+
+        if (userTokens.size === 0 || refTokens.size === 0) {
+            return { score: 0, isLikelyCorrect: false, matchedKeywords: [] };
+        }
 
         let intersection = 0;
+        const matched = [];
         userTokens.forEach(token => {
-            if (refTokens.has(token)) intersection += 1;
+            if (refTokens.has(token)) {
+                intersection += 1;
+                matched.push(token);
+            }
         });
 
         const union = new Set([...userTokens, ...refTokens]).size;
-        return intersection / union;
+        const jaccard = intersection / union;
+
+        // Keyword coverage: unique matched keywords over reference keywords
+        const coverage = matched.length / Math.max(refTokens.size, 1);
+
+        // Final score: weighted blend to favor overlap while rewarding coverage
+        const score = (jaccard * 0.7) + (coverage * 0.3);
+
+        return {
+            score,
+            isLikelyCorrect: score >= 0.3, // balanced threshold
+            matchedKeywords: matched.slice(0, 8),
+        };
     };
 
     // Voice State
     const [isListening, setIsListening] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const recognitionRef = useRef(null);
+    const resumeInputRef = useRef(null);
 
     // Interaction Modes: 'normal', 'selecting_domain', 'answering_question', 'post_answer'
     const [interactionMode, setInteractionMode] = useState('normal');
@@ -122,6 +147,7 @@ const Chatbot = () => {
         setCurrentContext({ domain: null, questionIndex: null });
         setInputValue('');
         setIsTyping(false);
+        setResumeText('');
     };
 
     const addBotMessage = (text) => {
@@ -134,6 +160,29 @@ const Chatbot = () => {
         setMessages(prev => [...prev, { ...newMsg, id: prev.length + 1 }]);
 
         speakText(text);
+    };
+
+    const handleResumeSelected = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const isText = file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt');
+        if (!isText) {
+            addBotMessage('Please upload a .txt resume for now.');
+            e.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const content = String(reader.result || '').slice(0, 12000);
+            setResumeText(content);
+            addBotMessage('Resume uploaded. I will keep it in mind for interview practice.');
+        };
+        reader.onerror = () => {
+            addBotMessage('Sorry, I could not read that file. Please try again.');
+        };
+        reader.readAsText(file);
     };
 
     const handleSendMessage = async (text = inputValue) => {
@@ -177,6 +226,10 @@ const Chatbot = () => {
                     }
 
                     addBotMessage("Great! Let's practice some interview questions. Based on your profile, here are some suggested domains:");
+
+                    if (resumeText) {
+                        addBotMessage("I'll keep your resume context in mind while we practice.");
+                    }
 
                     // Show domains as buttons (handled in render, but we can also just list them textually or add a special message type)
                     // For now, let's just list them and ask user to type/click
@@ -244,18 +297,19 @@ const Chatbot = () => {
                     const questionObj = interviewQuestions[domain][questionIndex];
 
                     const referenceText = `${questionObj.answer} ${questionObj.explanation}`;
-                    const similarityScore = jaccardSimilarity(text, referenceText);
-                    const isLikelyCorrect = similarityScore >= 0.32;
+                    const { score, isLikelyCorrect, matchedKeywords } = evaluateAnswer(text, referenceText);
 
                     addBotMessage(`Your answer: ${text}`);
 
                     if (isLikelyCorrect) {
-                        addBotMessage("Good, keep it on! Your answer matches what I expect. Can we move to the next question? (Yes/No)");
+                        const keywordNote = matchedKeywords.length ? ` (matched keywords: ${matchedKeywords.join(', ')})` : '';
+                        addBotMessage(`Good, keep it on! Your answer matches what I expect${keywordNote}. Can we move to the next question? (Yes/No)`);
                     } else {
                         addBotMessage("Here is an ideal answer you can compare against:");
                         addBotMessage(questionObj.answer);
                         addBotMessage(`Explanation: ${questionObj.explanation}`);
                         addBotMessage("Would you like to try another question? (Yes/No)");
+                        addBotMessage(`(Tip: Cover more of these ideas — score ${Math.round(score * 100)}%)`);
                     }
 
                     setInteractionMode('post_answer');
@@ -398,6 +452,13 @@ const Chatbot = () => {
 
     return (
         <div className="chatbot-wrapper">
+            <input
+                type="file"
+                accept=".txt,text/plain"
+                ref={resumeInputRef}
+                style={{ display: 'none' }}
+                onChange={handleResumeSelected}
+            />
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -502,6 +563,13 @@ const Chatbot = () => {
                                         title="Speak"
                                     >
                                         {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                                    </button>
+                                    <button
+                                        onClick={() => resumeInputRef.current?.click()}
+                                        className="chatbot-upload-btn"
+                                        title="Upload resume (.txt)"
+                                    >
+                                        <Upload size={18} />
                                     </button>
                                     <input
                                         type="text"
