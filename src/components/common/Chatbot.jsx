@@ -62,7 +62,7 @@ const Chatbot = () => {
 
         return {
             score,
-            isLikelyCorrect: score >= 0.3, // balanced threshold
+            isLikelyCorrect: score >= 0.25, // balanced threshold - slightly forgiving to account for different phrasings
             matchedKeywords: matched.slice(0, 8),
         };
     };
@@ -373,14 +373,18 @@ const Chatbot = () => {
                     addBotMessage(`Your answer: ${text}`);
 
                     if (isLikelyCorrect) {
-                        const keywordNote = matchedKeywords.length ? ` (matched keywords: ${matchedKeywords.join(', ')})` : '';
-                        addBotMessage(`Good, keep it on! Your answer matches what I expect${keywordNote}. Can we move to the next question? (Yes/No)`);
+                        const keywordNote = matchedKeywords.length ? ` You covered key concepts: ${matchedKeywords.join(', ')}.` : '';
+                        addBotMessage(`🎉 Excellent! Good, keep it on! Your answer demonstrates a solid understanding.${keywordNote}`);
+                        addBotMessage(`Can we move to the next question? (Yes/No)`);
                     } else {
-                        addBotMessage("Here is an ideal answer you can compare against:");
+                        const scorePercent = Math.round(score * 100);
+                        addBotMessage(`Good effort! Your answer matched ${scorePercent}% with the expected response. Let me show you a more complete answer:`);
                         addBotMessage(questionObj.answer);
-                        addBotMessage(`Explanation: ${questionObj.explanation}`);
+                        addBotMessage(`💡 Explanation: ${questionObj.explanation}`);
+                        if (matchedKeywords.length > 0) {
+                            addBotMessage(`✓ You did mention: ${matchedKeywords.join(', ')}`);
+                        }
                         addBotMessage("Would you like to try another question? (Yes/No)");
-                        addBotMessage(`(Tip: Cover more of these ideas — score ${Math.round(score * 100)}%)`);
                     }
 
                     setInteractionMode('post_answer');
@@ -555,106 +559,106 @@ const Chatbot = () => {
                                     <X size={18} />
                                 </button>
                             </div>
+                        </div>
 
-                            <div className="chatbot-messages">
-                                {messages.map((msg) => (
-                                    <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
-                                        {msg.text}
-                                    </div>
-                                ))}
-                                {isTyping && (
-                                    <div className="message message-bot">
-                                        <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
-                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
-                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
-                                            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
-                                        </span>
-                                    </div>
-                                )}
-                                <div ref={messagesEndRef} />
+                        <div className="chatbot-messages">
+                            {messages.map((msg) => (
+                                <div key={msg.id} className={`message ${msg.sender === 'user' ? 'message-user' : 'message-bot'}`}>
+                                    {msg.text}
+                                </div>
+                            ))}
+                            {isTyping && (
+                                <div className="message message-bot">
+                                    <span style={{ fontSize: '1.2rem', lineHeight: '10px' }}>
+                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}>.</motion.span>
+                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>.</motion.span>
+                                        <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}>.</motion.span>
+                                    </span>
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {messages.length < 3 && interactionMode === 'normal' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Recommend a course" />
+                                <QuickAction text="Interview Questions" />
+                                <QuickAction text="Career advice" />
                             </div>
+                        )}
 
-                            {messages.length < 3 && interactionMode === 'normal' && (
-                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                    <QuickAction text="Recommend a course" />
-                                    <QuickAction text="Interview Questions" />
-                                    <QuickAction text="Career advice" />
-                                </div>
-                            )}
+                        {interactionMode === 'career_advisor' && currentContext.step === 'start' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Technology / Code" />
+                                <QuickAction text="Design / Strategy" />
+                            </div>
+                        )}
 
-                            {interactionMode === 'career_advisor' && currentContext.step === 'start' && (
-                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                    <QuickAction text="Technology / Code" />
-                                    <QuickAction text="Design / Strategy" />
-                                </div>
-                            )}
+                        {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Visual (Frontend)" />
+                                <QuickAction text="Logic (Backend)" />
+                                <QuickAction text="Data Science" />
+                            </div>
+                        )}
 
-                            {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
-                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                    <QuickAction text="Visual (Frontend)" />
-                                    <QuickAction text="Logic (Backend)" />
-                                    <QuickAction text="Data Science" />
-                                </div>
-                            )}
+                        {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="UI/UX Design" />
+                                <QuickAction text="Product Management" />
+                            </div>
+                        )}
 
-                            {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
-                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                    <QuickAction text="UI/UX Design" />
-                                    <QuickAction text="Product Management" />
-                                </div>
-                            )}
+                        {interactionMode === 'selecting_domain' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                {(() => {
+                                    const saved = localStorage.getItem('suggestedDomains');
+                                    let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
+                                    if (domains.length === 0) domains = Object.keys(interviewQuestions);
 
-                            {interactionMode === 'selecting_domain' && (
-                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                    {(() => {
-                                        const saved = localStorage.getItem('suggestedDomains');
-                                        let domains = saved ? JSON.parse(saved).map(d => d.career) : Object.keys(interviewQuestions);
-                                        if (domains.length === 0) domains = Object.keys(interviewQuestions);
+                                    return domains.map(d => (
+                                        <QuickAction key={d} text={d} />
+                                    ));
+                                })()}
+                            </div>
+                        )}
 
-                                        return domains.map(d => (
-                                            <QuickAction key={d} text={d} />
-                                        ));
-                                    })()}
-                                </div>
-                            )}
+                        {interactionMode === 'post_answer' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Yes, please" />
+                                <QuickAction text="No, thanks" />
+                            </div>
+                        )}
 
-                            {interactionMode === 'post_answer' && (
-                                <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                                    <QuickAction text="Yes, please" />
-                                    <QuickAction text="No, thanks" />
-                                </div>
-                            )}
-
-                            <div className="chatbot-input-area">
-                                <div style={{ display: 'flex', gap: '8px', width: '100%', alignItems: 'center' }}>
-                                    <button
-                                        onClick={toggleListening}
-                                        className={`chatbot-send-btn ${isListening ? 'listening' : ''}`}
-                                        style={{ background: isListening ? '#ef4444' : 'rgba(255,255,255,0.1)' }}
-                                        title="Speak"
-                                    >
-                                        {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-                                    </button>
-                                    <button
-                                        onClick={() => resumeInputRef.current?.click()}
-                                        className="chatbot-upload-btn"
-                                        title="Upload resume (.txt)"
-                                    >
-                                        <Upload size={18} />
-                                    </button>
-                                    <input
-                                        type="text"
-                                        placeholder={isListening ? "Listening..." : (interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything...")}
-                                        value={inputValue}
-                                        onChange={(e) => setInputValue(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        className="chatbot-input"
-                                        style={{ flex: 1 }}
-                                    />
-                                    <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
-                                        <Send size={18} />
-                                    </button>
-                                </div>
+                        <div className="chatbot-input-area">
+                            <div style={{ display: 'flex', gap: '8px', width: '100%', alignItems: 'center' }}>
+                                <button
+                                    onClick={toggleListening}
+                                    className={`chatbot-send-btn ${isListening ? 'listening' : ''}`}
+                                    style={{ background: isListening ? '#ef4444' : 'rgba(255,255,255,0.1)' }}
+                                    title="Speak"
+                                >
+                                    {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                                </button>
+                                <button
+                                    onClick={() => resumeInputRef.current?.click()}
+                                    className="chatbot-upload-btn"
+                                    title="Upload resume (.txt)"
+                                >
+                                    <Upload size={18} />
+                                </button>
+                                <input
+                                    type="text"
+                                    placeholder={isListening ? "Listening..." : (interactionMode === 'answering_question' ? "Type your answer..." : "Ask anything...")}
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    className="chatbot-input"
+                                    style={{ flex: 1 }}
+                                />
+                                <button onClick={() => handleSendMessage()} className="chatbot-send-btn">
+                                    <Send size={18} />
+                                </button>
                             </div>
                         </div>
                     </motion.div>
