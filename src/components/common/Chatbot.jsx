@@ -2,8 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX, Upload } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs';
+import mammoth from 'mammoth/mammoth.browser';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -63,6 +68,37 @@ const Chatbot = () => {
             isLikelyCorrect: score >= 0.3, // balanced threshold
             matchedKeywords: matched.slice(0, 8),
         };
+    };
+
+    const parseTextFile = async (file) => {
+        const content = await file.text();
+        return content.slice(0, 15000);
+    };
+
+    const parsePdfFile = async (file) => {
+        const data = new Uint8Array(await file.arrayBuffer());
+        const pdf = await pdfjsLib.getDocument({ data }).promise;
+        const maxPages = Math.min(pdf.numPages, 20);
+        let text = '';
+
+        for (let i = 1; i <= maxPages; i += 1) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const strings = content.items.map((item) => item.str).join(' ');
+            text += `${strings}\n`;
+            if (text.length > 15000) break;
+        }
+
+        return text.slice(0, 15000);
+    };
+
+    const stripHtml = (html) => html.replace(/<[^>]+>/g, ' ');
+
+    const parseDocxFile = async (file) => {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        const text = stripHtml(result.value || '').replace(/\s+/g, ' ').trim();
+        return text.slice(0, 15000);
     };
 
     // Voice State
@@ -162,27 +198,45 @@ const Chatbot = () => {
         speakText(text);
     };
 
-    const handleResumeSelected = (e) => {
+    const handleResumeSelected = async (e) => {
         const file = e.target.files?.[0];
+        const resetInput = () => { e.target.value = ''; };
         if (!file) return;
 
-        const isText = file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt');
-        if (!isText) {
-            addBotMessage('Please upload a .txt resume for now.');
-            e.target.value = '';
-            return;
-        }
+        const name = file.name.toLowerCase();
+        const ext = name.split('.').pop();
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            const content = String(reader.result || '').slice(0, 12000);
+        try {
+            let content = '';
+
+            if (ext === 'txt' || file.type === 'text/plain') {
+                content = await parseTextFile(file);
+            } else if (ext === 'pdf' || file.type === 'application/pdf') {
+                addBotMessage('Parsing PDF resume...');
+                content = await parsePdfFile(file);
+            } else if (ext === 'docx' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                addBotMessage('Parsing DOCX resume...');
+                content = await parseDocxFile(file);
+            } else {
+                addBotMessage('Please upload a .txt, .pdf, or .docx resume.');
+                resetInput();
+                return;
+            }
+
+            if (!content || !content.trim()) {
+                addBotMessage('Sorry, that file seems empty. Please try another one.');
+                resetInput();
+                return;
+            }
+
             setResumeText(content);
             addBotMessage('Resume uploaded. I will keep it in mind for interview practice.');
-        };
-        reader.onerror = () => {
+        } catch (err) {
+            console.error('Resume parse error', err);
             addBotMessage('Sorry, I could not read that file. Please try again.');
-        };
-        reader.readAsText(file);
+        } finally {
+            resetInput();
+        }
     };
 
     const handleSendMessage = async (text = inputValue) => {
@@ -454,7 +508,7 @@ const Chatbot = () => {
         <div className="chatbot-wrapper">
             <input
                 type="file"
-                accept=".txt,text/plain"
+                accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 ref={resumeInputRef}
                 style={{ display: 'none' }}
                 onChange={handleResumeSelected}
