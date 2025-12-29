@@ -19,7 +19,7 @@ export const generateAIResponse = async (prompt, provider = 'local') => {
         return "For interview prep, I suggest focusing on Data Structures & Algorithms. We also have expert mentors available to conduct mock interviews!";
     }
 
-    return "I'm currently running in offline mode to protect your privacy. Use the Dashboard to explore courses, or the 'Experts' tab to connect with a human mentor!";
+    return "I'm a local assistant. I can help you practice for interviews! Just type 'practice' or 'interview' to get started, or ask about 'courses'.";
 };
 
 // Call the server-side ML inference API. Falls back to local rule-based engine if the API is unreachable.

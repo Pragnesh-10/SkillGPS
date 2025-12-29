@@ -606,5 +606,157 @@ export const interviewQuestions = {
             answer: "A term commonly used in the JavaScript context for dead code elimination.",
             explanation: "Webpack or Rollup removes unused exports to reduce bundle size."
         }
+    ],
+    "Product Manager": [
+        {
+            question: "What is a Product Manager?",
+            answer: "A Product Manager is responsible for the strategy, roadmap, and feature definition for a product or product line. They bridge the gap between business, technology, and user experience.",
+            explanation: "Ideally, they are the CEO of the product."
+        },
+        {
+            question: "How do you prioritize features?",
+            answer: "I use frameworks like RICE (Reach, Impact, Confidence, Effort), MoSCoW (Must have, Should have, Could have, Won't have), or the Kano Model to prioritize based on business value and user needs.",
+            explanation: "Prioritization is key to delivering value with limited resources."
+        },
+        {
+            question: "What is an MVP?",
+            answer: "Minimum Viable Product. It is the version of a new product which allows a team to collect the maximum amount of validated learning about customers with the least effort.",
+            explanation: "It prevents building products that customers do not want."
+        },
+        {
+            question: "How do you define success for a product?",
+            answer: "By defining clear Key Performance Indicators (KPIs) such as User Acquisition, Retention Rate, Daily Active Users (DAU), and Net Promoter Score (NPS).",
+            explanation: "Metrics should align with overall business goals."
+        },
+        {
+            question: "What is Agile methodology?",
+            answer: "An iterative approach to project management and software development that helps teams deliver value to their customers faster and with fewer headaches.",
+            explanation: "It focuses on collaboration, customer feedback, and small, rapid releases."
+        },
+        {
+            question: "How do you handle a feature request from a major stakeholder that doesn't fit the roadmap?",
+            answer: "I would listen to their need, understand the 'why' behind it, and evaluate it against the current priorities and goals. If it's critical, we trade it off; otherwise, it goes into the backlog.",
+            explanation: "Data-driven pushback is often necessary."
+        },
+        {
+            question: "What is User Acceptance Testing (UAT)?",
+            answer: "The final phase of the software testing process where actual software users test the software to make sure it can handle required tasks in real-world scenarios.",
+            explanation: "It ensures the product is ready for release."
+        },
+        {
+            question: "Difference between a Product Manager and a Project Manager?",
+            answer: "Product Managers deal with the 'What' and 'Why' (Strategy, Roadmap). Project Managers deal with the 'How' and 'When' (Execution, Timeline, Resources).",
+            explanation: "One is strategic, the other is tactical."
+        },
+        {
+            question: "What are User Stories?",
+            answer: "Short, simple descriptions of a feature told from the perspective of the person who desires the new capability, usually a user or customer of the system.",
+            explanation: "Format: As a <type of user>, I want <some goal> so that <some reason>."
+        },
+        {
+            question: "What is Churn Rate?",
+            answer: "The percentage of service subscribers who discontinue their subscriptions within a given time period.",
+            explanation: "Lower churn is critical for SaaS growth."
+        },
+        {
+            question: "How do you conduct market research?",
+            answer: "Through surveys, user interviews, competitor analysis, focus groups, and analyzing market trends and reports.",
+            explanation: "It validates assumptions before building."
+        },
+        {
+            question: "What is a Roadmap?",
+            answer: "A shared source of truth that outlines the vision, direction, priorities, and progress of a product over time.",
+            explanation: "It aligns stakeholders and development teams."
+        },
+        {
+            question: "What is A/B Testing?",
+            answer: "Comparing two versions of a webpage or app against each other to determine which one performs better.",
+            explanation: "Essential for optimizing conversion rates."
+        },
+        {
+            question: "What is CAC (Customer Acquisition Cost)?",
+            answer: "The cost associated with convincing a customer to buy a product/service.",
+            explanation: "Calculated by dividing all sales and marketing costs by the number of new customers acquired."
+        },
+        {
+            question: "What is LTV (Lifetime Value)?",
+            answer: "The total revenue a business can reasonably expect from a single customer account.",
+            explanation: "LTV:CAC ratio is a key measure of business health."
+        },
+        {
+            question: "How do you deal with engineering delays?",
+            answer: "Communicate early with stakeholders, understand the root cause, cut scope if necessary to meet deadlines, or adjust the timeline.",
+            explanation: "Transparency is key."
+        },
+        {
+            question: "What is Product-Market Fit?",
+            answer: "Being in a good market with a product that can satisfy that market.",
+            explanation: "Signified by organic growth and high retention."
+        },
+        {
+            question: "What tools do you use for Product Management?",
+            answer: "Jira/Linear for tracking, Figma for design, Notion/Confluence for documentation, Mixpanel/Amplitude for analytics.",
+            explanation: "Tools facilitate collaboration and tracking."
+        },
+        {
+            question: "How do you measure retention?",
+            answer: "By tracking the percentage of users who return to the app after their first visit over specific time periods (Day 1, Day 7, Day 30).",
+            explanation: "Cohort analysis is often used."
+        },
+        {
+            question: "What is a Wireframe vs Mockup vs Prototype?",
+            answer: "Wireframe = Skeleton/Structure. Mockup = Visual Design/Colors. Prototype = Interactive/Clickable.",
+            explanation: "Fidelity increases at each step."
+        },
+        {
+            question: "What is a Sprint?",
+            answer: "A set period of time during which specific work has to be completed and made ready for review (usually 2 weeks in Scrum).",
+            explanation: "Allows for iterative development."
+        },
+        {
+            question: "What is Technical Debt?",
+            answer: "The implied cost of additional rework caused by choosing an easy (limited) solution now instead of using a better approach that would take longer.",
+            explanation: "It must be paid down eventually or development slows."
+        },
+        {
+            question: "How do you handle conflict in a team?",
+            answer: "Listen to all sides, focus on data and the user problem, and facilitate a compromise or make a decided call if necessary.",
+            explanation: "Psychological safety is important."
+        },
+        {
+            question: "What is NPS?",
+            answer: "Net Promoter Score. A metric used to gauge customer loyalty by asking 'How likely is it that you would recommend our product to a friend?'.",
+            explanation: "Range -100 to 100."
+        },
+        {
+            question: "What is the specific role of a Product Owner in Scrum?",
+            answer: "To maximize the value of the product resulting from work of the Development Team. Manages the Product Backlog.",
+            explanation: "Often synonymous with PM in smaller orgs, but distinct in Scrum."
+        },
+        {
+            question: "What is a 'North Star Metric'?",
+            answer: "The single metric that best captures the core value your product delivers to its customers.",
+            explanation: "e.g., Spotify = Time spent listening."
+        },
+        {
+            question: "What is Discovery vs Delivery?",
+            answer: "Discovery is figuring out what to build (User Research). Delivery is building it (Engineering).",
+            explanation: "Continuous discovery is best practice."
+        },
+        {
+            question: "How do you monetize a product?",
+            answer: "Freemium, Subscription (SaaS), Ads, Transaction fees, Licensing.",
+            explanation: "Depends on user base and value proposition."
+        },
+        {
+            question: "What is Design Thinking?",
+            answer: "A non-linear, iterative process that teams use to understand users, challenge assumptions, redefine problems and create innovative solutions to prototype and test.",
+            explanation: "Empathize, Define, Ideate, Prototype, Test."
+        },
+        {
+            question: "What is a Pain Point?",
+            answer: "A specific problem that prospective customers of your business are experiencing.",
+            explanation: "Products solve pain points."
+        }
     ]
 };

@@ -53,7 +53,13 @@ const Chatbot = () => {
         try {
             // INTERVIEW MODE LOGIC
             // 1. Trigger Interview Mode
-            if (interactionMode === 'normal' && (text.toLowerCase().includes('interview') || text.toLowerCase().includes('question'))) {
+            if (interactionMode === 'normal' && (
+                text.toLowerCase().includes('interview') ||
+                text.toLowerCase().includes('question') ||
+                text.toLowerCase().includes('practice') ||
+                text.toLowerCase().includes('quiz') ||
+                text.toLowerCase().includes('mock')
+            )) {
                 setTimeout(() => {
                     const savedDomains = localStorage.getItem('suggestedDomains');
                     let domains = [];
@@ -88,25 +94,46 @@ const Chatbot = () => {
             // 2. Select Domain
             if (interactionMode === 'selecting_domain') {
                 setTimeout(() => {
-                    const selectedDomain = Object.keys(interviewQuestions).find(d =>
-                        text.toLowerCase().includes(d.toLowerCase())
-                    );
+                    try {
+                        const lowerText = text.toLowerCase();
+                        const availableDomains = Object.keys(interviewQuestions);
 
-                    if (selectedDomain) {
-                        const questions = interviewQuestions[selectedDomain];
-                        const randomIndex = Math.floor(Math.random() * questions.length);
-                        const questionObj = questions[randomIndex];
+                        let selectedDomain = availableDomains.find(d =>
+                            lowerText.includes(d.toLowerCase())
+                        );
 
-                        setCurrentContext({ domain: selectedDomain, questionIndex: randomIndex });
-                        addBotMessage(`Okay, here is a ${selectedDomain} interview question:`);
-                        addBotMessage(questionObj.question);
-                        addBotMessage("Please type your answer below.");
+                        // Fuzzy / Shortcut matching
+                        if (!selectedDomain) {
+                            if (lowerText.includes('data') || lowerText.includes('science')) selectedDomain = "Data Scientist";
+                            else if (lowerText.includes('front') || lowerText.includes('web')) selectedDomain = "Frontend Developer";
+                            else if (lowerText.includes('back') || lowerText.includes('api')) selectedDomain = "Backend Developer";
+                            else if (lowerText.includes('ui') || lowerText.includes('ux') || lowerText.includes('design')) selectedDomain = "UI/UX Designer";
+                            else if (lowerText.includes('product') || lowerText.includes('manager') || lowerText === 'pm' || lowerText.includes(' pm ')) selectedDomain = "Product Manager";
+                        }
 
-                        setInteractionMode('answering_question');
-                    } else {
-                        addBotMessage("I didn't recognize that domain. Please choose from: " + Object.keys(interviewQuestions).join(', '));
+                        if (selectedDomain) {
+                            const questions = interviewQuestions[selectedDomain];
+                            if (!questions || questions.length === 0) {
+                                throw new Error(`No questions found for ${selectedDomain}`);
+                            }
+                            const randomIndex = Math.floor(Math.random() * questions.length);
+                            const questionObj = questions[randomIndex];
+
+                            setCurrentContext({ domain: selectedDomain, questionIndex: randomIndex });
+                            addBotMessage(`Okay, here is a ${selectedDomain} interview question:`);
+                            addBotMessage(questionObj.question);
+                            addBotMessage("Please type your answer below.");
+
+                            setInteractionMode('answering_question');
+                        } else {
+                            addBotMessage("I didn't recognize that domain. Please choose from: " + Object.keys(interviewQuestions).join(', '));
+                        }
+                    } catch (err) {
+                        console.error("Domain selection error:", err);
+                        addBotMessage("Sorry, something went wrong selecting that domain. Please try again.");
+                    } finally {
+                        setIsTyping(false);
                     }
-                    setIsTyping(false);
                 }, 800);
                 return;
             }
