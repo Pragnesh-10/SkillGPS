@@ -344,6 +344,7 @@ const Chatbot = () => {
                         </div>
 
                         {messages.length < 3 && interactionMode === 'normal' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
                                 <QuickAction text="Recommend a course" />
                                 <QuickAction text="Interview Questions" />
                                 <QuickAction text="Career advice" />
@@ -351,26 +352,26 @@ const Chatbot = () => {
                         )}
 
                         {interactionMode === 'career_advisor' && currentContext.step === 'start' && (
-                           <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                               <QuickAction text="Technology / Code" />
-                               <QuickAction text="Design / Strategy" />
-                           </div>
-                       )}
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Technology / Code" />
+                                <QuickAction text="Design / Strategy" />
+                            </div>
+                        )}
 
-                       {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
-                           <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                               <QuickAction text="Visual (Frontend)" />
-                               <QuickAction text="Logic (Backend)" />
-                               <QuickAction text="Data Science" />
-                           </div>
-                       )}
+                        {interactionMode === 'career_advisor' && currentContext.step === 'technical' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="Visual (Frontend)" />
+                                <QuickAction text="Logic (Backend)" />
+                                <QuickAction text="Data Science" />
+                            </div>
+                        )}
 
-                       {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
-                           <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                               <QuickAction text="UI/UX Design" />
-                               <QuickAction text="Product Management" />
-                           </div>
-                       )}
+                        {interactionMode === 'career_advisor' && currentContext.step === 'creative' && (
+                            <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                                <QuickAction text="UI/UX Design" />
+                                <QuickAction text="Product Management" />
+                            </div>
+                        )}
 
                         {interactionMode === 'selecting_domain' && (
                             <div style={{ padding: '0 16px 8px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
