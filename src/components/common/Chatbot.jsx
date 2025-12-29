@@ -2,13 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX, Upload } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import mammoth from 'mammoth/mammoth.browser';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +13,8 @@ const Chatbot = () => {
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [resumeText, setResumeText] = useState('');
+    const pdfLibRef = useRef(null);
+    const mammothRef = useRef(null);
 
     // Lightweight NLP helpers for answer matching
     const STOP_WORDS = useRef(new Set([
@@ -70,12 +67,31 @@ const Chatbot = () => {
         };
     };
 
+    const loadPdfJs = async () => {
+        if (!pdfLibRef.current) {
+            const pdfjsLib = await import('pdfjs-dist');
+            const workerSrc = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+            pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc.default || workerSrc;
+            pdfLibRef.current = pdfjsLib;
+        }
+        return pdfLibRef.current;
+    };
+
+    const loadMammoth = async () => {
+        if (!mammothRef.current) {
+            const mammoth = await import('mammoth/mammoth.browser');
+            mammothRef.current = mammoth.default || mammoth;
+        }
+        return mammothRef.current;
+    };
+
     const parseTextFile = async (file) => {
         const content = await file.text();
         return content.slice(0, 15000);
     };
 
     const parsePdfFile = async (file) => {
+        const pdfjsLib = await loadPdfJs();
         const data = new Uint8Array(await file.arrayBuffer());
         const pdf = await pdfjsLib.getDocument({ data }).promise;
         const maxPages = Math.min(pdf.numPages, 20);
@@ -95,6 +111,7 @@ const Chatbot = () => {
     const stripHtml = (html) => html.replace(/<[^>]+>/g, ' ');
 
     const parseDocxFile = async (file) => {
+        const mammoth = await loadMammoth();
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.convertToHtml({ arrayBuffer });
         const text = stripHtml(result.value || '').replace(/\s+/g, ' ').trim();
