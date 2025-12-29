@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@vercel/analytics": "^1.6.1",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",
     "openai": "^6.15.0",

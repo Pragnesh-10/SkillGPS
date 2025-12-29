@@ -517,6 +517,7 @@ const Chatbot = () => {
                                     </button>
                                 </div>
                             </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
