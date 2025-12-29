@@ -1,7 +1,7 @@
 .chatbot-wrapper {
     position: fixed;
-    bottom: 32px;
-    right: 32px;
+    bottom: 36px;
+    right: 36px;
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -30,10 +30,10 @@
 }
 
 .chatbot-window {
-    width: 320px;
-    height: 520px;
-    max-width: 90vw;
-    max-height: 75vh;
+    width: 300px;
+    height: 480px;
+    max-width: 88vw;
+    max-height: 72vh;
     background: var(--bg-card);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
@@ -165,8 +165,8 @@
 @media (max-width: 480px) {
     .chatbot-window {
         width: 92vw;
-        height: 68vh;
-        margin-bottom: 12px;
+        height: 64vh;
+        margin-bottom: 10px;
     }
 
     .chatbot-toggle-btn {
