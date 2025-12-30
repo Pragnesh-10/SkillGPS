@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { courses } from '../data/courses';
-import { PlayCircle, Clock, Star, CheckCircle, Circle, X } from 'lucide-react';
+import { PlayCircle, Clock, Star, CheckCircle, Circle, X, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { matchSkills } from '../services/skillsMatcher';
 
 const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -219,6 +220,21 @@ const Dashboard = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // Load resume data from localStorage
+    const [resumeData, setResumeData] = useState(() => {
+        const saved = localStorage.getItem('resumeData');
+        return saved ? JSON.parse(saved) : null;
+    });
+
+    // Calculate skills gap if resume is uploaded
+    const [skillsGap, setSkillsGap] = useState(null);
+    useEffect(() => {
+        if (resumeData && selectedDomain) {
+            const result = matchSkills(resumeData.skills, selectedDomain);
+            setSkillsGap(result);
+        }
+    }, [resumeData, selectedDomain]);
+
     useEffect(() => {
         const jsonStats = JSON.stringify([...completedCourses]);
         localStorage.setItem('completedCourses', jsonStats);
@@ -340,6 +356,50 @@ const Dashboard = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Skills Gap Section */}
+            {skillsGap && skillsGap.essentialMissing.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    style={{
+                        marginBottom: '40px',
+                        padding: '24px',
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(255,255,255,0.03) 100%)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(239, 68, 68, 0.3)'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <AlertCircle size={28} color="#ef4444" />
+                        <div>
+                            <h2 style={{ fontSize: '1.5rem', margin: 0, marginBottom: '4px' }}>Essential Skills You Need</h2>
+                            <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>
+                                Based on your resume analysis, focus on acquiring these skills
+                            </p>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {skillsGap.essentialMissing.slice(0, 10).map((skill, index) => (
+                            <span
+                                key={index}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'rgba(239, 68, 68, 0.15)',
+                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                    borderRadius: '20px',
+                                    fontSize: '0.9rem',
+                                    color: '#ef4444',
+                                    textTransform: 'capitalize'
+                                }}
+                            >
+                                {skill}
+                            </span>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
 
             <div className="dashboard-grid">
                 {/* Left Column: Free Resources */}

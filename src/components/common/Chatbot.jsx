@@ -166,6 +166,38 @@ const Chatbot = () => {
         }
     }, []);
 
+    // Listen for event to open chatbot with welcome message after survey
+    useEffect(() => {
+        const handleOpenChatbotWithWelcome = (event) => {
+            const { careers, fromSurvey } = event.detail || {};
+
+            if (fromSurvey && careers && careers.length > 0) {
+                // Open the chatbot
+                setIsOpen(true);
+
+                // Clear existing messages and add personalized welcome
+                setTimeout(() => {
+                    setMessages([
+                        { id: 1, text: "🎉 Congratulations on completing the survey!", sender: 'bot' },
+                        { id: 2, text: `Based on your responses, I've identified your top career matches: ${careers.join(', ')}`, sender: 'bot' },
+                        { id: 3, text: "I'm here to help you on your learning journey! Here's what I can do:", sender: 'bot' },
+                        { id: 4, text: "• Practice interview questions for your recommended careers\n• Provide career advice and guidance\n• Answer questions about courses and learning paths\n• Analyze your resume (if you upload one)", sender: 'bot' },
+                        { id: 5, text: "What would you like to explore first?", sender: 'bot' }
+                    ]);
+
+                    // Speak the welcome message
+                    speakText("Congratulations on completing the survey! I'm here to help you on your learning journey.");
+                }, 300);
+            }
+        };
+
+        window.addEventListener('openChatbotWithWelcome', handleOpenChatbotWithWelcome);
+
+        return () => {
+            window.removeEventListener('openChatbotWithWelcome', handleOpenChatbotWithWelcome);
+        };
+    }, []);
+
     const toggleListening = () => {
         if (isListening) {
             recognitionRef.current?.stop();
@@ -215,6 +247,65 @@ const Chatbot = () => {
         speakText(text);
     };
 
+    const analyzeResume = (content) => {
+        const lowerContent = content.toLowerCase();
+
+        // Extract skills
+        const skillPatterns = {
+            programming: ['python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin', 'go', 'rust', 'typescript', 'react', 'angular', 'vue', 'node.js', 'django', 'flask', 'spring'],
+            data: ['sql', 'nosql', 'mongodb', 'postgresql', 'mysql', 'data analysis', 'machine learning', 'deep learning', 'tensorflow', 'pytorch', 'pandas', 'numpy', 'scikit-learn', 'tableau', 'power bi'],
+            design: ['figma', 'sketch', 'adobe xd', 'photoshop', 'illustrator', 'ui/ux', 'wireframing', 'prototyping', 'user research'],
+            cloud: ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'ci/cd', 'jenkins', 'terraform'],
+            other: ['git', 'agile', 'scrum', 'jira', 'api', 'rest', 'graphql', 'microservices']
+        };
+
+        const foundSkills = {};
+        let totalSkillsFound = 0;
+
+        Object.entries(skillPatterns).forEach(([category, skills]) => {
+            foundSkills[category] = skills.filter(skill =>
+                lowerContent.includes(skill.toLowerCase())
+            );
+            totalSkillsFound += foundSkills[category].length;
+        });
+
+        // Estimate years of experience
+        const expMatches = content.match(/(\d+)\+?\s*(years?|yrs?)\s*(of)?\s*(experience|exp)/gi);
+        let estimatedExperience = 0;
+        if (expMatches) {
+            const numbers = expMatches.map(match => parseInt(match.match(/\d+/)[0]));
+            estimatedExperience = Math.max(...numbers);
+        }
+
+        // Check for education
+        const educationKeywords = ['bachelor', 'master', 'phd', 'b.tech', 'm.tech', 'bca', 'mca', 'degree', 'university', 'college'];
+        const hasEducation = educationKeywords.some(keyword => lowerContent.includes(keyword));
+
+        // Recommend career paths based on skills
+        const recommendations = [];
+
+        if (foundSkills.programming.some(s => ['react', 'angular', 'vue', 'javascript', 'typescript'].includes(s))) {
+            recommendations.push('Frontend Developer');
+        }
+        if (foundSkills.programming.some(s => ['node.js', 'django', 'flask', 'spring', 'java', 'python'].includes(s))) {
+            recommendations.push('Backend Developer');
+        }
+        if (foundSkills.data.some(s => ['machine learning', 'deep learning', 'tensorflow', 'pytorch', 'data analysis'].includes(s))) {
+            recommendations.push('Data Scientist');
+        }
+        if (foundSkills.design.length > 0) {
+            recommendations.push('UI/UX Designer');
+        }
+
+        return {
+            skills: foundSkills,
+            totalSkills: totalSkillsFound,
+            experience: estimatedExperience,
+            hasEducation,
+            recommendations: recommendations.length > 0 ? recommendations : ['Full Stack Developer']
+        };
+    };
+
     const handleResumeSelected = async (e) => {
         const file = e.target.files?.[0];
         const resetInput = () => { e.target.value = ''; };
@@ -247,7 +338,40 @@ const Chatbot = () => {
             }
 
             setResumeText(content);
-            addBotMessage('Resume uploaded. I will keep it in mind for interview practice.');
+            addBotMessage('✅ Resume uploaded successfully! Analyzing your profile...');
+
+            // Analyze the resume
+            setTimeout(() => {
+                const analysis = analyzeResume(content);
+
+                // Present the analysis
+                addBotMessage('📊 Resume Analysis Complete!');
+
+                if (analysis.totalSkills > 0) {
+                    const allSkills = Object.values(analysis.skills).flat();
+                    const topSkills = allSkills.slice(0, 8).join(', ');
+                    addBotMessage(`🔧 Skills Found: ${topSkills}${allSkills.length > 8 ? ` and ${allSkills.length - 8} more` : ''}`);
+                } else {
+                    addBotMessage('💡 Tip: Make sure to include your technical skills in your resume!');
+                }
+
+                if (analysis.experience > 0) {
+                    addBotMessage(`💼 Experience Level: ~${analysis.experience} years`);
+                }
+
+                if (analysis.hasEducation) {
+                    addBotMessage('🎓 Educational background detected');
+                }
+
+                addBotMessage(`🎯 Recommended Career Paths: ${analysis.recommendations.join(', ')}`);
+
+                // Store recommendations for later use
+                const domainData = analysis.recommendations.map(career => ({ career, score: 0.8 }));
+                localStorage.setItem('suggestedDomains', JSON.stringify(domainData));
+
+                addBotMessage('Would you like to practice interview questions for any of these roles? Just type "interview questions" to get started!');
+            }, 1000);
+
         } catch (err) {
             console.error('Resume parse error', err);
             addBotMessage('Sorry, I could not read that file. Please try again.');

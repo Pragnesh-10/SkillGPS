@@ -3,12 +3,18 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Loader } from 'lucide-react';
 import { getCareerRecommendations } from '../services/ai';
+import ResumeUpload from '../components/common/ResumeUpload';
+import SkillsGapAnalysis from '../components/common/SkillsGapAnalysis';
 
 const Results = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [domains, setDomains] = useState([]);
+    const [resumeData, setResumeData] = useState(() => {
+        const saved = localStorage.getItem('resumeData');
+        return saved ? JSON.parse(saved) : null;
+    });
 
     useEffect(() => {
         let cancelled = false;
@@ -23,6 +29,16 @@ const Results = () => {
                         const arr = preds.map(p => (typeof p === 'string' ? { career: p, prob: 1 } : p));
                         setDomains(arr);
                         localStorage.setItem('suggestedDomains', JSON.stringify(arr));
+
+                        // Trigger chatbot to open after results are shown
+                        setTimeout(() => {
+                            window.dispatchEvent(new CustomEvent('openChatbotWithWelcome', {
+                                detail: {
+                                    careers: arr.map(d => d.career),
+                                    fromSurvey: true
+                                }
+                            }));
+                        }, 1500); // Wait 1.5s so user can see the results first
                     }
                 } catch (err) {
                     console.error('Error fetching recommendations', err);
@@ -149,6 +165,22 @@ const Results = () => {
                     </motion.div>
                 ))}
             </motion.div>
+
+            {/* Resume Upload Section */}
+            <ResumeUpload onResumeAnalyzed={(data) => setResumeData(data)} />
+
+            {/* Skills Gap Analysis for each career */}
+            {resumeData && domains.length > 0 && (
+                <div style={{ marginTop: '40px' }}>
+                    {domains.map((d, index) => (
+                        <SkillsGapAnalysis
+                            key={d.career}
+                            resumeData={resumeData}
+                            career={d.career}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
