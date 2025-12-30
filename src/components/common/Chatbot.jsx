@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateAIResponse } from '../../services/ai';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX, Upload } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Cpu, Zap, RefreshCw, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
 
@@ -763,13 +763,6 @@ const Chatbot = () => {
                                     title="Speak"
                                 >
                                     {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-                                </button>
-                                <button
-                                    onClick={() => resumeInputRef.current?.click()}
-                                    className="chatbot-upload-btn"
-                                    title="Upload resume (.txt)"
-                                >
-                                    <Upload size={18} />
                                 </button>
                                 <input
                                     type="text"
