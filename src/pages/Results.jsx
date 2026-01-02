@@ -180,10 +180,10 @@ const Results = () => {
                             >
                                 Start Learning Path
                             </motion.button>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{Math.round((d.prob || 1) * 100)}% match</div>
+                            {!isSkipSurvey && <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{Math.round((d.prob || 1) * 100)}% match</div>}
                         </div>
 
-                        {index === 0 && (
+                        {index === 0 && !isSkipSurvey && (
                             <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <CheckCircle size={12} /> BEST MATCH
                             </div>
