@@ -242,3 +242,8 @@ export const courses = {
         ]
     }
 };
+
+// Utility function to get all available career domains
+export const getAllDomains = () => {
+    return Object.keys(courses).filter(key => key !== 'default');
+};

@@ -171,22 +171,33 @@ const Chatbot = () => {
         const handleOpenChatbotWithWelcome = (event) => {
             const { careers, fromSurvey } = event.detail || {};
 
-            if (fromSurvey && careers && careers.length > 0) {
+            if (careers && careers.length > 0) {
                 // Open the chatbot
                 setIsOpen(true);
 
-                // Clear existing messages and add personalized welcome
+                // Clear existing messages and add appropriate welcome based on flow
                 setTimeout(() => {
-                    setMessages([
-                        { id: 1, text: "🎉 Congratulations on completing the survey!", sender: 'bot' },
-                        { id: 2, text: `Based on your responses, I've identified your top career matches: ${careers.join(', ')}`, sender: 'bot' },
-                        { id: 3, text: "I'm here to help you on your learning journey! Here's what I can do:", sender: 'bot' },
-                        { id: 4, text: "• Practice interview questions for your recommended careers\n• Provide career advice and guidance\n• Answer questions about courses and learning paths\n• Analyze your resume (if you upload one)", sender: 'bot' },
-                        { id: 5, text: "What would you like to explore first?", sender: 'bot' }
-                    ]);
-
-                    // Speak the welcome message
-                    speakText("Congratulations on completing the survey! I'm here to help you on your learning journey.");
+                    if (fromSurvey) {
+                        // User completed survey - personalized message
+                        setMessages([
+                            { id: 1, text: "🎉 Congratulations on completing the survey!", sender: 'bot' },
+                            { id: 2, text: `Based on your responses, I've identified your top career matches: ${careers.join(', ')}`, sender: 'bot' },
+                            { id: 3, text: "I'm here to help you on your learning journey! Here's what I can do:", sender: 'bot' },
+                            { id: 4, text: "• Practice interview questions for your recommended careers\n• Provide career advice and guidance\n• Answer questions about courses and learning paths\n• Analyze your resume (if you upload one)", sender: 'bot' },
+                            { id: 5, text: "What would you like to explore first?", sender: 'bot' }
+                        ]);
+                        speakText("Congratulations on completing the survey! I'm here to help you on your learning journey.");
+                    } else {
+                        // User skipped survey - general message
+                        setMessages([
+                            { id: 1, text: "👋 Welcome to SkillGPS!", sender: 'bot' },
+                            { id: 2, text: `I see you're exploring all career paths! We have ${careers.length} amazing domains available: ${careers.slice(0, 5).join(', ')}${careers.length > 5 ? `, and ${careers.length - 5} more` : ''}.`, sender: 'bot' },
+                            { id: 3, text: "I'm here to help you discover the perfect career! Here's what I can do:", sender: 'bot' },
+                            { id: 4, text: "• Practice interview questions for any domain\n• Provide career advice and guidance\n• Answer questions about courses and learning paths\n• Analyze your resume to suggest career matches", sender: 'bot' },
+                            { id: 5, text: "What would you like to explore first?", sender: 'bot' }
+                        ]);
+                        speakText("Welcome to SkillGPS! I'm here to help you discover the perfect career.");
+                    }
                 }, 300);
             }
         };

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Loader } from 'lucide-react';
 import { getCareerRecommendations } from '../services/ai';
+import { getAllDomains } from '../data/courses';
 import ResumeUpload from '../components/common/ResumeUpload';
 import SkillsGapAnalysis from '../components/common/SkillsGapAnalysis';
 
@@ -11,6 +12,7 @@ const Results = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [domains, setDomains] = useState([]);
+    const [isSkipSurvey, setIsSkipSurvey] = useState(false);
     const [resumeData, setResumeData] = useState(() => {
         const saved = localStorage.getItem('resumeData');
         return saved ? JSON.parse(saved) : null;
@@ -20,11 +22,33 @@ const Results = () => {
         let cancelled = false;
 
         (async () => {
-            if (state?.formData) {
+            // Check if user skipped survey
+            const skipSurvey = state?.skipSurvey || localStorage.getItem('skipSurvey') === 'true';
+
+            if (skipSurvey) {
+                // Show all available career domains
+                setIsSkipSurvey(true);
+                const allDomains = getAllDomains();
+                const domainsData = allDomains.map(career => ({ career, prob: 1 }));
+                setDomains(domainsData);
+                localStorage.setItem('suggestedDomains', JSON.stringify(domainsData));
+
+                // Trigger chatbot with skip survey context
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('openChatbotWithWelcome', {
+                        detail: {
+                            careers: allDomains,
+                            fromSurvey: false // Indicate this is from skip survey
+                        }
+                    }));
+                }, 1500);
+
+                setLoading(false);
+            } else if (state?.formData) {
+                // Survey completed - get personalized recommendations
                 try {
                     const preds = await getCareerRecommendations(state.formData);
                     if (!cancelled) {
-                        // normalize to array of {career, prob}
                         // normalize to array of {career, prob}
                         const arr = preds.map(p => (typeof p === 'string' ? { career: p, prob: 1 } : p));
                         setDomains(arr);
@@ -93,7 +117,7 @@ const Results = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5 }}
                 >
-                    Your Perfect Career Matches
+                    {isSkipSurvey ? 'Explore All Career Paths' : 'Your Perfect Career Matches'}
                 </motion.h1>
                 <motion.p
                     style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}
@@ -101,7 +125,9 @@ const Results = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                    Based on your skills, interests, and personality, these are your top domains.
+                    {isSkipSurvey
+                        ? 'Browse through all available career domains and choose the path that excites you the most.'
+                        : 'Based on your skills, interests, and personality, these are your top domains.'}
                 </motion.p>
             </div>
 

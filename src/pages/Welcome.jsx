@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import BackgroundGlow from '../components/common/BackgroundGlow';
+import SurveyChoiceModal from '../components/common/SurveyChoiceModal';
 import './Welcome.css';
 
 import VisitorCounter from '../components/common/VisitorCounter';
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -54,13 +56,7 @@ const Welcome = () => {
 
           <motion.button
             className="btn-primary welcome-cta"
-            onClick={() => {
-              // Always start fresh when clicking "Start Your Journey"
-              localStorage.removeItem('formData');
-              localStorage.removeItem('completedCourses');
-              localStorage.removeItem('enrolledCourses');
-              navigate('/survey');
-            }}
+            onClick={() => setShowChoiceModal(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             variants={itemVariants}
@@ -91,6 +87,12 @@ const Welcome = () => {
       </div>
 
       <VisitorCounter />
+
+      {/* Survey Choice Modal */}
+      <SurveyChoiceModal
+        isOpen={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+      />
     </div >
   );
 };
