@@ -41,7 +41,7 @@ const Welcome = () => {
           animate="visible"
         >
           <motion.div className="welcome-badge" variants={itemVariants}>
-            <Sparkles size={16} color="#ec4899" />
+            <Sparkles size={16} color="#ffffff" />
             <span className="welcome-badge-text">AI-Powered Career Guidance</span>
           </motion.div>
 
@@ -63,26 +63,6 @@ const Welcome = () => {
           >
             Start Your Journey <ArrowRight size={20} />
           </motion.button>
-        </motion.div>
-
-        <motion.div
-          className="welcome-stats"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.8 }}
-        >
-          <div className="stat-item">
-            <h3>50+</h3>
-            <p>Career Paths</p>
-          </div>
-          <div className="stat-item">
-            <h3>10k+</h3>
-            <p>Learning Resources</p>
-          </div>
-          <div className="stat-item">
-            <h3>Verified</h3>
-            <p>Expert Network</p>
-          </div>
         </motion.div>
       </div>
 

@@ -3,23 +3,28 @@
 :root {
   --font-main: 'Outfit', sans-serif;
 
-  /* Premium Dark Theme Palette */
+  /* India Tricolor Theme Palette */
   --bg-dark: #0a0a0f;
   --bg-card: #13131f;
   --bg-card-hover: #1c1c2e;
-  
-  --primary: #6366f1; /* Indigo 500 */
-  --primary-glow: rgba(99, 102, 241, 0.4);
-  --secondary: #ec4899; /* Pink 500 */
-  --secondary-glow: rgba(236, 72, 153, 0.4);
-  
+
+  --primary: #FF9933;
+  /* Saffron Orange */
+  --primary-glow: rgba(255, 153, 51, 0.4);
+  --secondary: #000080;
+  /* Navy Blue (Ashoka Chakra) */
+  --secondary-glow: rgba(0, 0, 128, 0.4);
+  --success: #138808;
+  /* India Green */
+  --success-glow: rgba(19, 136, 8, 0.4);
+
   --text-main: #ffffff;
   --text-muted: #94a3b8;
-  
+
   --border-light: rgba(255, 255, 255, 0.1);
-  
-  --gradient-main: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-  
+
+  --gradient-main: linear-gradient(135deg, #FF9933 0%, #138808 100%);
+
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -90,7 +95,7 @@ button {
 }
 
 .card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: rgba(255, 153, 51, 0.3);
   transform: translateY(-2px);
 }
 

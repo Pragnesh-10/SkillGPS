@@ -120,7 +120,7 @@ const SurveyChoiceModal = ({ isOpen, onClose }) => {
                                         <Sparkles size={24} color="white" />
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
                                             Take Survey & Get Personalized Recommendations
                                             <span style={{
                                                 background: 'rgba(16, 185, 129, 0.2)',
@@ -168,10 +168,10 @@ const SurveyChoiceModal = ({ isOpen, onClose }) => {
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}>
-                                        <Grid3x3 size={24} />
+                                        <Grid3x3 size={24} color="white" />
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>
+                                        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', color: 'white' }}>
                                             Skip Survey & Explore All Career Paths
                                         </h3>
                                         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '12px' }}>

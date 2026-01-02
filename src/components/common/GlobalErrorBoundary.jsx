@@ -52,7 +52,7 @@ class GlobalErrorBoundary extends React.Component {
                         <br />
                         <br />
                         <details>
-                            <summary style={{ cursor: 'pointer', color: '#6366f1' }}>Stack Trace</summary>
+                            <summary style={{ cursor: 'pointer', color: '#FF9933' }}>Stack Trace</summary>
                             <pre style={{ marginTop: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>
                                 {this.state.errorInfo && this.state.errorInfo.componentStack}
                             </pre>
@@ -63,7 +63,7 @@ class GlobalErrorBoundary extends React.Component {
                         style={{
                             marginTop: '30px',
                             padding: '12px 24px',
-                            background: '#6366f1',
+                            background: 'linear-gradient(135deg, #FF9933 0%, #138808 100%)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '8px',
