@@ -11,6 +11,7 @@ const SurveyChoiceModal = ({ isOpen, onClose }) => {
         localStorage.removeItem('formData');
         localStorage.removeItem('completedCourses');
         localStorage.removeItem('enrolledCourses');
+        localStorage.removeItem('resumeData'); // Clear any stale resume data
         navigate('/survey');
         onClose();
     };
@@ -20,6 +21,7 @@ const SurveyChoiceModal = ({ isOpen, onClose }) => {
         localStorage.removeItem('formData');
         localStorage.removeItem('completedCourses');
         localStorage.removeItem('enrolledCourses');
+        localStorage.removeItem('resumeData'); // Clear any stale resume data
         navigate('/results', { state: { skipSurvey: true } });
         onClose();
     };

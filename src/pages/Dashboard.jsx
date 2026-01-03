@@ -336,6 +336,7 @@ const Dashboard = () => {
                                         localStorage.removeItem('formData');
                                         localStorage.removeItem('completedCourses');
                                         localStorage.removeItem('enrolledCourses');
+                                        localStorage.removeItem('resumeData');
                                         window.location.href = '/survey';
                                     }
                                 }}

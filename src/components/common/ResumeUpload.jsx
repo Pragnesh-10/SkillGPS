@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, X, CheckCircle } from 'lucide-react';
 import { parseResume } from '../../utils/resumeParser';
@@ -9,6 +9,9 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
     const [fileName, setFileName] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [parsedData, setParsedData] = useState(null);
+    const [countdown, setCountdown] = useState(10);
+    const deleteTimerRef = useRef(null);
+    const countdownTimerRef = useRef(null);
 
     const handleDragOver = (e) => {
         e.preventDefault();
@@ -58,6 +61,9 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
 
                 // Store in localStorage
                 localStorage.setItem('resumeData', JSON.stringify(parsed));
+
+                // Reset countdown to 30 seconds
+                setCountdown(30);
             }, 800);
         };
 
@@ -65,14 +71,58 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
     };
 
     const handleClear = () => {
+        // Clear timers
+        if (deleteTimerRef.current) {
+            clearTimeout(deleteTimerRef.current);
+            deleteTimerRef.current = null;
+        }
+        if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current);
+            countdownTimerRef.current = null;
+        }
+
         setResumeText('');
         setFileName('');
         setParsedData(null);
+        setCountdown(10);
         localStorage.removeItem('resumeData');
         if (onResumeAnalyzed) {
             onResumeAnalyzed(null);
         }
     };
+
+    // Auto-delete timer - delete resume data after 10 seconds
+    useEffect(() => {
+        if (parsedData) {
+            // Clear any existing timers
+            if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+            if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+
+            // Set countdown interval (updates every second)
+            countdownTimerRef.current = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(countdownTimerRef.current);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            // Set delete timer (deletes after 10 seconds)
+            deleteTimerRef.current = setTimeout(() => {
+                // Only remove from localStorage, keep UI state for skills analysis
+                localStorage.removeItem('resumeData');
+                setCountdown(10);
+            }, 10000); // 10 seconds
+
+            // Cleanup on unmount
+            return () => {
+                if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+                if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+            };
+        }
+    }, [parsedData]);
 
     return (
         <div style={{ marginTop: '40px' }}>

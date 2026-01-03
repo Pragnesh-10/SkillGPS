@@ -42,12 +42,68 @@ export const useCodeProtection = () => {
             }
         };
 
+        // Detect DevTools by checking window size difference
+        let devtoolsOpen = false;
+        const threshold = 160;
+
+        const detectDevTools = () => {
+            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+
+            if (widthThreshold || heightThreshold) {
+                if (!devtoolsOpen) {
+                    devtoolsOpen = true;
+                    // Clear localStorage sensitive data when DevTools detected
+                    localStorage.removeItem('resumeData');
+                }
+            } else {
+                devtoolsOpen = false;
+            }
+        };
+
+        // Override console methods in production
+        if (process.env.NODE_ENV === 'production') {
+            const noop = () => { };
+            window.console.log = noop;
+            window.console.debug = noop;
+            window.console.info = noop;
+            window.console.warn = noop;
+        }
+
+        // Detect debugger usage
+        const checkDebugger = () => {
+            const startTime = performance.now();
+            debugger; // This will pause if DevTools is open
+            const endTime = performance.now();
+
+            // If execution was paused, likely debugger is open
+            if (endTime - startTime > 100) {
+                // Clear sensitive data
+                localStorage.removeItem('resumeData');
+            }
+        };
+
+        // Check periodically for DevTools
+        const devToolsInterval = setInterval(detectDevTools, 1000);
+        const debuggerInterval = setInterval(checkDebugger, 3000);
+
+        // Disable text selection to make copying harder
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+        document.body.style.msUserSelect = 'none';
+
         document.addEventListener('contextmenu', handleContextMenu);
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            clearInterval(devToolsInterval);
+            clearInterval(debuggerInterval);
             document.removeEventListener('contextmenu', handleContextMenu);
             document.removeEventListener('keydown', handleKeyDown);
+            // Restore text selection
+            document.body.style.userSelect = '';
+            document.body.style.webkitUserSelect = '';
+            document.body.style.msUserSelect = '';
         };
     }, []);
 };
