@@ -354,7 +354,6 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                     )}
                 </motion.div>
             )}
-            )}
         </motion.div>
     );
 };
