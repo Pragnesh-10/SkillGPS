@@ -91,6 +91,31 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
         }
     };
 
+    // Check localStorage on mount and periodically to sync state
+    useEffect(() => {
+        const checkLocalStorage = () => {
+            const savedResumeData = localStorage.getItem('resumeData');
+            // If localStorage is empty but component has data, clear it
+            if (!savedResumeData && parsedData) {
+                setResumeText('');
+                setFileName('');
+                setParsedData(null);
+                setCountdown(10);
+                if (onResumeAnalyzed) {
+                    onResumeAnalyzed(null);
+                }
+            }
+        };
+
+        // Check on mount
+        checkLocalStorage();
+
+        // Check periodically (every 2 seconds) to catch auto-delete
+        const interval = setInterval(checkLocalStorage, 2000);
+
+        return () => clearInterval(interval);
+    }, [parsedData, onResumeAnalyzed]);
+
     // Auto-delete timer - delete resume data after 10 seconds
     useEffect(() => {
         if (parsedData) {
