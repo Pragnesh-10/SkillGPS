@@ -1,5 +1,6 @@
 import { careerSkills, getAllSkillsForCareer, getEssentialSkills } from '../data/careerSkills';
 import { courses } from '../data/courses';
+import { careerProjects } from '../data/careerProjects';
 
 /**
  * Match resume skills with career requirements
@@ -164,4 +165,89 @@ export const getReadinessAssessment = (matchResult) => {
         essentialMatchPercentage,
         overallMatchPercentage: matchPercentage
     };
+};
+
+/**
+ * Get project recommendations based on user's skill level and missing skills
+ * @param {Object} matchResult - Result from matchSkills
+ * @param {Array} userSkills - User's current skills
+ * @param {String} careerName - Target career
+ * @returns {Object} - Categorized project recommendations
+ */
+export const getProjectRecommendations = (matchResult, userSkills, careerName) => {
+    const projects = careerProjects[careerName];
+
+    if (!projects) {
+        return { beginner: [], intermediate: [], advanced: [] };
+    }
+
+    const { essentialMatchPercentage, essentialMissing } = matchResult;
+    const normalizedUserSkills = userSkills.map(s => s.toLowerCase());
+
+    // Score projects based on skill alignment
+    const scoreProject = (project) => {
+        const projectSkills = project.skills.map(s => s.toLowerCase());
+        const matchedProjectSkills = projectSkills.filter(skill =>
+            normalizedUserSkills.some(userSkill =>
+                userSkill.includes(skill) || skill.includes(userSkill)
+            )
+        );
+
+        // Skills user will learn from this project
+        const skillsToLearn = projectSkills.filter(skill =>
+            !normalizedUserSkills.some(userSkill =>
+                userSkill.includes(skill) || skill.includes(userSkill)
+            )
+        );
+
+        // Check if project helps with missing essential skills
+        const helpsWithEssentialSkills = essentialMissing.some(missing =>
+            projectSkills.some(pSkill => pSkill.toLowerCase().includes(missing.toLowerCase()))
+        );
+
+        return {
+            ...project,
+            matchScore: matchedProjectSkills.length,
+            skillsToLearn,
+            helpsWithEssentialSkills,
+            readyToStart: matchedProjectSkills.length >= projectSkills.length * 0.5
+        };
+    };
+
+    // Determine which difficulty levels to show
+    let recommendedLevels = [];
+
+    if (essentialMatchPercentage < 30) {
+        recommendedLevels = ['beginner'];
+    } else if (essentialMatchPercentage < 60) {
+        recommendedLevels = ['beginner', 'intermediate'];
+    } else if (essentialMatchPercentage < 85) {
+        recommendedLevels = ['intermediate', 'advanced'];
+    } else {
+        recommendedLevels = ['intermediate', 'advanced'];
+    }
+
+    const recommendations = {};
+
+    // Score and filter projects for each level
+    ['beginner', 'intermediate', 'advanced'].forEach(level => {
+        if (recommendedLevels.includes(level)) {
+            const levelProjects = (projects[level] || [])
+                .map(scoreProject)
+                .sort((a, b) => {
+                    // Prioritize projects that help with essential skills
+                    if (a.helpsWithEssentialSkills && !b.helpsWithEssentialSkills) return -1;
+                    if (!a.helpsWithEssentialSkills && b.helpsWithEssentialSkills) return 1;
+                    // Then by match score
+                    return b.matchScore - a.matchScore;
+                })
+                .slice(0, 5); // Top 5 projects per level
+
+            recommendations[level] = levelProjects;
+        } else {
+            recommendations[level] = [];
+        }
+    });
+
+    return recommendations;
 };

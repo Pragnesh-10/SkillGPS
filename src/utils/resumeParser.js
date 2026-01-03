@@ -100,14 +100,78 @@ export const parseResume = (resumeText) => {
     // Extract sections (Skills, Experience, Education, etc.)
     const sections = extractSections(resumeText);
 
+    // Parse projects from the projects section
+    const projects = parseProjects(sections.projects, ALL_SKILLS);
+
     return {
         skills: Array.from(extractedSkills),
         categorizedSkills,
         rawText: resumeText,
         sections,
-        skillCount: extractedSkills.size
+        projects,  // Added projects array
+        skillCount: extractedSkills.size,
+        projectCount: projects.length
     };
 };
+
+/**
+ * Parse projects from resume text
+ * Extracts project titles, technologies used, and descriptions
+ */
+const parseProjects = (projectSection, allSkills) => {
+    if (!projectSection) return [];
+
+    const projects = [];
+    const lines = projectSection.split('\n').filter(line => line.trim());
+
+    let currentProject = null;
+
+    lines.forEach((line, index) => {
+        const trimmed = line.trim();
+
+        // Skip very short lines or empty lines
+        if (trimmed.length < 5) return;
+
+        // Detect project titles
+        const isTitleLine = /^[A-Z][^.!?]*[:|-]/.test(trimmed) ||
+            trimmed === trimmed.toUpperCase() && trimmed.length < 80;
+
+        if (isTitleLine || (index === 0 && trimmed.length < 100)) {
+            if (currentProject) {
+                projects.push(currentProject);
+            }
+
+            currentProject = {
+                title: trimmed.replace(/[:|-]\s*$/, '').trim(),
+                description: '',
+                technologies: []
+            };
+        } else if (currentProject) {
+            currentProject.description += (currentProject.description ? ' ' : '') + trimmed;
+        }
+    });
+
+    if (currentProject) {
+        projects.push(currentProject);
+    }
+
+    // Extract technologies from each project
+    projects.forEach(project => {
+        const projectText = `${project.title} ${project.description}`.toLowerCase();
+
+        allSkills.forEach(skill => {
+            const skillPattern = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+            if (skillPattern.test(projectText)) {
+                project.technologies.push(skill);
+            }
+        });
+
+        project.technologies = [...new Set(project.technologies)];
+    });
+
+    return projects.filter(p => p.title && p.title.length > 0);
+};
+
 
 /**
  * Extract common resume sections
