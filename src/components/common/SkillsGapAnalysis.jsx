@@ -24,6 +24,10 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
             // Get readiness assessment
             const assessment = getReadinessAssessment(result);
             setReadiness(assessment);
+
+            // Get project recommendations
+            const projectRecs = getProjectRecommendations(result, resumeData.skills, career);
+            setProjectRecommendations(projectRecs);
         }
     }, [resumeData, career]);
 
@@ -312,7 +316,7 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                     <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
                         Build these projects to acquire missing skills and strengthen your portfolio
                     </p>
-                    
+
                     {projectRecommendations.beginner?.length > 0 && (
                         <div style={{ marginBottom: '32px' }}>
                             <h4 style={{ fontSize: '1.2rem', marginBottom: '16px', color: '#10b981' }}>🟢 Beginner Projects</h4>
