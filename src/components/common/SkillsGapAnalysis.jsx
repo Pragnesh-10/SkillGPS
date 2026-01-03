@@ -305,6 +305,7 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                         ))}
                     </div>
                 </motion.div>
+            )}
 
             {/* Project Recommendations */}
             {projectRecommendations && (projectRecommendations.beginner?.length > 0 || projectRecommendations.intermediate?.length > 0 || projectRecommendations.advanced?.length > 0) && (
