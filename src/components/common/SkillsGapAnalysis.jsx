@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, TrendingUp, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
-import { matchSkills, getSkillGapRecommendations, getReadinessAssessment } from '../../services/skillsMatcher';
+import { CheckCircle, XCircle, TrendingUp, BookOpen, ChevronDown, ChevronUp, Code, Sparkles } from 'lucide-react';
+import { matchSkills, getSkillGapRecommendations, getReadinessAssessment, getProjectRecommendations } from '../../services/skillsMatcher';
 
 const SkillsGapAnalysis = ({ resumeData, career }) => {
     const [matchResult, setMatchResult] = useState(null);
     const [recommendations, setRecommendations] = useState([]);
     const [readiness, setReadiness] = useState(null);
     const [expandedSkillIndex, setExpandedSkillIndex] = useState(null);
+    const [projectRecommendations, setProjectRecommendations] = useState(null);
+    const [expandedProjectIndex, setExpandedProjectIndex] = useState(null);
 
     useEffect(() => {
         if (resumeData && career) {
@@ -299,6 +301,55 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                         ))}
                     </div>
                 </motion.div>
+
+            {/* Project Recommendations */}
+            {projectRecommendations && (projectRecommendations.beginner?.length > 0 || projectRecommendations.intermediate?.length > 0 || projectRecommendations.advanced?.length > 0) && (
+                <motion.div variants={cardVariants} style={{ marginTop: '48px' }}>
+                    <h3 style={{ fontSize: '1.5rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Code size={28} color="var(--primary)" />
+                        Recommended Projects to Build
+                    </h3>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+                        Build these projects to acquire missing skills and strengthen your portfolio
+                    </p>
+                    
+                    {projectRecommendations.beginner?.length > 0 && (
+                        <div style={{ marginBottom: '32px' }}>
+                            <h4 style={{ fontSize: '1.2rem', marginBottom: '16px', color: '#10b981' }}>🟢 Beginner Projects</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {projectRecommendations.beginner.map((project, index) => (
+                                    <motion.div key={index} className="card" style={{ padding: '20px', cursor: 'pointer' }} onClick={() => setExpandedProjectIndex(expandedProjectIndex === `beginner-${index}` ? null : `beginner-${index}`)}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div>
+                                                <h5 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>{project.title}</h5>
+                                                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Duration: {project.duration} • {project.skills.length} skills</p>
+                                            </div>
+                                            <motion.div animate={{ rotate: expandedProjectIndex === `beginner-${index}` ? 180 : 0 }}>
+                                                <ChevronDown size={20} />
+                                            </motion.div>
+                                        </div>
+                                        <AnimatePresence>
+                                            {expandedProjectIndex === `beginner-${index}` && (
+                                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', marginTop: '16px' }}>
+                                                    <p style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>{project.description}</p>
+                                                    <div style={{ marginBottom: '12px' }}>
+                                                        <strong>Skills you'll learn:</strong>
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                                                            {project.skillsToLearn?.map((skill, idx) => (
+                                                                <span key={idx} style={{ padding: '4px 10px', background: 'rgba(255, 153, 51, 0.1)', border: '1px solid rgba(255, 153, 51, 0.3)', borderRadius: '6px', fontSize: '0.85rem' }}>{skill}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
+            )}
             )}
         </motion.div>
     );
