@@ -118,7 +118,7 @@ const Chatbot = () => {
 
     // Voice State
     const [isListening, setIsListening] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
     const recognitionRef = useRef(null);
     const resumeInputRef = useRef(null);
 
