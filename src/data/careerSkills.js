@@ -106,16 +106,16 @@ export const careerSkills = {
     },
     'Data Analyst': {
         technical: {
-            essential: ['SQL', 'Excel', 'Data Visualization', 'Statistics', 'Data Analysis', 'Pandas', 'Data Cleaning'],
-            recommended: ['Python', 'R', 'Tableau', 'Power BI', 'Google Analytics', 'A/B Testing', 'ETL Processes'],
-            advanced: ['Advanced Statistics', 'Predictive Modeling', 'Machine Learning Basics', 'Big Data Tools', 'Data Warehousing']
+            essential: ['SQL', 'Python', 'R', 'NumPy', 'Pandas', 'Excel', 'Statistics', 'Data Visualization'],
+            recommended: ['Matplotlib', 'Seaborn', 'Tableau', 'Power BI', 'Data Cleaning', 'ETL Basics', 'Google Analytics'],
+            advanced: ['Advanced Statistics', 'A/B Testing', 'Predictive Modeling', 'Machine Learning Basics', 'Data Warehousing']
         },
         tools: {
-            essential: ['Excel', 'SQL', 'Tableau', 'Power BI'],
-            recommended: ['Python', 'R', 'Google Data Studio', 'Looker', 'Jupyter Notebook'],
-            advanced: ['Apache Spark', 'Snowflake', 'dbt', 'Airflow', 'AWS Redshift']
+            essential: ['SQL', 'Excel', 'Python', 'R', 'Tableau', 'Power BI'],
+            recommended: ['Jupyter Notebook', 'NumPy', 'Pandas', 'Matplotlib', 'Seaborn', 'Google Data Studio'],
+            advanced: ['Apache Spark', 'Snowflake', 'dbt', 'Airflow', 'AWS Redshift', 'Looker']
         },
-        soft: ['Analytical Thinking', 'Attention to Detail', 'Communication', 'Problem Solving', 'Data Storytelling', 'Business Acumen']
+        soft: ['Communication', 'Problem Solving', 'Business Acumen', 'Critical Thinking', 'Analytical Thinking', 'Attention to Detail']
     }
 };
 
