@@ -7,9 +7,7 @@ import { interviewQuestions } from '../../data/interviewQuestions';
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([
-        { id: 1, text: "Hi there! I'm your SkillGPS Assistant. How can I help you today?", sender: 'bot' }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [resumeText, setResumeText] = useState('');
@@ -236,9 +234,7 @@ const Chatbot = () => {
     const toggleChat = () => setIsOpen(!isOpen);
 
     const resetChat = () => {
-        setMessages([
-            { id: 1, text: "Hi there! I'm your SkillGPS Assistant. How can I help you today?", sender: 'bot' }
-        ]);
+        setMessages([]);
         setInteractionMode('normal');
         setCurrentContext({ domain: null, questionIndex: null });
         setInputValue('');
