@@ -718,6 +718,119 @@ export const careerProjects = {
                 outcomes: ["Integration architecture", "Data flows", "System design"]
             }
         ]
+    },
+    'Data Analyst': {
+        beginner: [
+            {
+                title: "Customer Purchase Analysis Dashboard",
+                description: "Analyze customer purchase patterns using Excel and create an interactive dashboard with charts and pivot tables.",
+                skills: ["Excel", "Pivot Tables", "Data Visualization", "Basic Statistics"],
+                duration: "1-2 weeks",
+                outcomes: ["Excel proficiency", "Dashboard creation", "Business insights"]
+            },
+            {
+                title: "Sales Performance Report",
+                description: "Use SQL to extract sales data and create comprehensive reports identifying top products, regions, and trends.",
+                skills: ["SQL", "Data Extraction", "Report Writing", "Basic Analysis"],
+                duration: "1-2 weeks",
+                outcomes: ["SQL queries", "Data reporting", "Trend identification"]
+            },
+            {
+                title: "Web Analytics Analysis",
+                description: "Analyze website traffic using Google Analytics, identify key metrics, and create insights report with recommendations.",
+                skills: ["Google Analytics", "Web Metrics", "Reporting", "Data Interpretation"],
+                duration: "1 week",
+                outcomes: ["Web analytics", "KPI tracking", "Actionable insights"]
+            },
+            {
+                title: "Survey Data Analysis",
+                description: "Clean and analyze survey data using Python/Pandas, create visualizations, and present findings.",
+                skills: ["Python", "Pandas", "Data Cleaning", "Matplotlib"],
+                duration: "2 weeks",
+                outcomes: ["Data cleaning", "Python basics", "Survey analysis"]
+            },
+            {
+                title: "Monthly Financial Report Automation",
+                description: "Automate monthly financial reporting using Excel formulas, macros, and basic VBA.",
+                skills: ["Excel", "Formulas", "Macros", "VBA Basics"],
+                duration: "2 weeks",
+                outcomes: ["Report automation", "Time savings", "Excel advanced skills"]
+            }
+        ],
+        intermediate: [
+            {
+                title: "Customer Churn Analysis",
+                description: "Identify patterns leading to customer churn using SQL and Python, create retention strategies based on findings.",
+                skills: ["SQL", "Python", "Cohort Analysis", "Churn Metrics", "Visualization"],
+                duration: "3-4 weeks",
+                outcomes: ["Churn analysis", "Retention insights", "Predictive indicators"]
+            },
+            {
+                title: "A/B Test Analysis Framework",
+                description: "Design and analyze A/B tests for marketing campaigns, determine statistical significance, and provide recommendations.",
+                skills: ["Statistics", "A/B Testing", "Hypothesis Testing", "Python/R"],
+                duration: "3 weeks",
+                outcomes: ["Experimental design", "Statistical analysis", "Data-driven decisions"]
+            },
+            {
+                title: "Interactive Tableau Dashboard",
+                description: "Build complex interactive dashboard in Tableau connecting multiple data sources with drill-down capabilities.",
+                skills: ["Tableau", "Data Blending", "Calculated Fields", "Dashboard Design"],
+                duration: "3-4 weeks",
+                outcomes: ["Advanced visualization", "Interactive dashboards", "Data storytelling"]
+            },
+            {
+                title: "Product Performance Analytics",
+                description: "Analyze product performance metrics, identify bestsellers and underperformers, recommend inventory optimization.",
+                skills: ["SQL", "Python", "Product Analytics", "Inventory Analysis"],
+                duration: "3-4 weeks",
+                outcomes: ["Product analytics", "Inventory insights", "Business recommendations"]
+            },
+            {
+                title: "Marketing Campaign ROI Analysis",
+                description: "Track and analyze marketing campaign performance across channels, calculate ROI, and optimize budget allocation.",
+                skills: ["Marketing Analytics", "ROI Calculation", "Multi-channel Analysis", "Power BI"],
+                duration: "4 weeks",
+                outcomes: ["Campaign analysis", "ROI metrics", "Budget optimization"]
+            }
+        ],
+        advanced: [
+            {
+                title: "Predictive Sales Forecasting Model",
+                description: "Build time series forecasting models using Python to predict future sales with seasonality and trend analysis.",
+                skills: ["Python", "Time Series Analysis", "Forecasting Models", "ARIMA", "Prophet"],
+                duration: "5-6 weeks",
+                outcomes: ["Predictive modeling", "Time series forecasting", "Business planning"]
+            },
+            {
+                title: "Customer Segmentation with ML",
+                description: "Use clustering algorithms (K-means, hierarchical) to segment customers and create targeted marketing strategies.",
+                skills: ["Python", "Machine Learning", "Clustering", "Customer Analytics", "Scikit-learn"],
+                duration: "4-5 weeks",
+                outcomes: ["ML clustering", "Customer segments", "Targeted strategies"]
+            },
+            {
+                title: "Automated ETL Pipeline",
+                description: "Build automated ETL pipeline using Python and SQL to extract data from multiple sources, transform, and load into data warehouse.",
+                skills: ["Python", "SQL", "ETL", "Data Engineering", "Airflow/Pandas"],
+                duration: "6-8 weeks",
+                outcomes: ["ETL automation", "Data pipeline", "Data engineering skills"]
+            },
+            {
+                title: "Business Intelligence System",
+                description: "Design and implement complete BI solution with data warehouse, ETL processes, and executive dashboards.",
+                skills: ["SQL", "Data Warehousing", "Power BI/Tableau", "ETL", "Database Design"],
+                duration: "8-10 weeks",
+                outcomes: ["End-to-end BI", "Data architecture", "Executive reporting"]
+            },
+            {
+                title: "Advanced Product Analytics Platform",
+                description: "Build comprehensive analytics platform tracking user behavior, funnel analysis, cohort retention, and product metrics.",
+                skills: ["SQL", "Python", "Product Analytics", "User Behavior Analysis", "Visualization"],
+                duration: "6-8 weeks",
+                outcomes: ["Product analytics", "User insights", "Metrics framework"]
+            }
+        ]
     }
 };
 

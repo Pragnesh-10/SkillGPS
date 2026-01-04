@@ -53,6 +53,11 @@ const CAREER_VECTORS = {
         env_team: 0.8, env_solo: 0.2, struct_structured: 0.8, struct_flexible: 0.2, role_dynamic: 0.5,
         int_explaining: 0.9, int_numbers: 0.7, int_logic: 0.6,
         conf_communication: 0.9, conf_math: 0.6, conf_coding: 0.2
+    },
+    'Data Analyst': {
+        env_solo: 0.5, env_team: 0.5, struct_structured: 0.7, struct_flexible: 0.3, role_desk: 0.9,
+        int_numbers: 0.9, int_logic: 0.7, int_explaining: 0.6,
+        conf_math: 0.7, conf_coding: 0.5, conf_communication: 0.7
     }
 };
 

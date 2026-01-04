@@ -240,6 +240,35 @@ export const courses = {
             { type: 'paid', title: 'Cloud Developer Nanodegree', platform: 'Udacity', duration: '4 months', rating: 4.7, outcome: 'Cloud Native Apps', link: 'https://www.udacity.com/course/cloud-developer-nanodegree--nd9990' },
             { type: 'paid', title: 'Software Engineering Career Track', platform: 'Springboard', duration: '9 months', rating: 4.8, outcome: 'Full Stack Mastery', link: 'https://www.springboard.com/workshops/software-engineering-career-track/' }
         ]
+    },
+    'Data Analyst': {
+        beginner: [
+            { type: 'free', title: 'Google Data Analytics Certificate', platform: 'Coursera (Audit)', duration: '6 months', rating: 4.8, outcome: 'Data Analysis, SQL, Visualization', link: 'https://www.coursera.org/professional-certificates/google-data-analytics' },
+            { type: 'free', title: 'SQL for Data Analysis', platform: 'Kaggle', duration: '4h', rating: 4.8, outcome: 'SQL Basics, Queries, Joins', link: 'https://www.kaggle.com/learn/intro-to-sql' },
+            { type: 'free', title: 'Excel Skills for Business', platform: 'Coursera (Audit)', duration: 'Varies', rating: 4.8, outcome: 'Excel Functions, Pivot Tables', link: 'https://www.coursera.org/specializations/excel' },
+            { type: 'free', title: 'Statistics Fundamentals', platform: 'Khan Academy', duration: 'Varies', rating: 4.8, outcome: 'Descriptive & Inferential Stats', link: 'https://www.khanacademy.org/math/statistics-probability' },
+            { type: 'free', title: 'Data Analysis with Python', platform: 'freeCodeCamp', duration: '10h', rating: 4.7, outcome: 'NumPy, Pandas, Matplotlib', link: 'https://www.freecodecamp.org/learn/data-analysis-with-python/' },
+            { type: 'paid', title: 'IBM Data Analyst Certificate', platform: 'Coursera', duration: '11 months', rating: 4.6, outcome: 'Complete Data Analytics', link: 'https://www.coursera.org/professional-certificates/ibm-data-analyst' },
+            { type: 'paid', title: 'Data Analysis Nanodegree', platform: 'Udacity', duration: '4 months', rating: 4.5, outcome: 'Real-world Projects', link: 'https://www.udacity.com/course/data-analyst-nanodegree--nd002' }
+        ],
+        intermediate: [
+            { type: 'free', title: 'Advanced SQL', platform: 'Mode Analytics', duration: 'Varies', rating: 4.7, outcome: 'Complex Queries, Window Functions', link: 'https://mode.com/sql-tutorial/intro-to-advanced-sql/' },
+            { type: 'free', title: 'Tableau Public Training', platform: 'Tableau', duration: 'Varies', rating: 4.8, outcome: 'Data Visualization Mastery', link: 'https://www.tableau.com/learn/training/20231' },
+            { type: 'free', title: 'Data Cleaning with Python', platform: 'Kaggle', duration: 'Varies', rating: 4.7, outcome: 'Data Wrangling Techniques', link: 'https://www.kaggle.com/learn/data-cleaning' },
+            { type: 'free', title: 'Google Analytics Academy', platform: 'Google', duration: 'Varies', rating: 4.7, outcome: 'Web Analytics, GA4', link: 'https://analytics.google.com/analytics/academy/' },
+            { type: 'paid', title: 'Data Analyst with SQL and Tableau', platform: 'DataCamp', duration: 'Varies', rating: 4.6, outcome: 'SQL + Visualization Skills', link: 'https://www.datacamp.com/tracks/data-analyst-with-sql-server' },
+            { type: 'paid', title: 'Microsoft Power BI Data Analyst', platform: 'Coursera', duration: 'Varies', rating: 4.7, outcome: 'Power BI Certification Prep', link: 'https://www.coursera.org/professional-certificates/microsoft-power-bi-data-analyst' },
+            { type: 'paid', title: 'Statistics for Data Analysis', platform: 'Udemy', duration: '25h', rating: 4.6, outcome: 'Statistical Inference, Hypothesis Testing', link: 'https://www.udemy.com/course/statistics-for-data-science/' }
+        ],
+        advanced: [
+            { type: 'free', title: 'A/B Testing Course', platform: 'Udacity', duration: 'Varies', rating: 4.7, outcome: 'Experiment Design, Analysis', link: 'https://www.udacity.com/course/ab-testing--ud257' },
+            { type: 'free', title: 'Advanced Data Wrangling', platform: 'Kaggle', duration: 'Varies', rating: 4.8, outcome: 'Complex Data Transformations', link: 'https://www.kaggle.com/learn' },
+            { type: 'free', title: 'Data Warehousing Concepts', platform: 'YouTube', duration: 'Varies', rating: 4.6, outcome: 'ETL, Data Modeling', link: 'https://www.youtube.com' },
+            { type: 'paid', title: 'Business Intelligence Specialization', platform: 'Coursera', duration: '5 months', rating: 4.7, outcome: 'BI Strategy, Implementation', link: 'https://www.coursera.org/specializations/business-intelligence' },
+            { type: 'paid', title: 'Data Engineering Fundamentals', platform: 'DataCamp', duration: 'Varies', rating: 4.6, outcome: 'ETL Pipelines, Data Quality', link: 'https://www.datacamp.com/tracks/data-engineer' },
+            { type: 'paid', title: 'Advanced Analytics with Excel', platform: 'Udemy', duration: '20h', rating: 4.7, outcome: 'Power Query, Power Pivot, VBA', link: 'https://www.udemy.com/course/microsoft-excel-advanced/' },
+            { type: 'paid', title: 'Predictive Analytics Certificate', platform: 'Coursera', duration: '6 months', rating: 4.6, outcome: 'Forecasting, Predictive Modeling', link: 'https://www.coursera.org/specializations/predictive-analytics' }
+        ]
     }
 };
 

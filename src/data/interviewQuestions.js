@@ -758,5 +758,157 @@ export const interviewQuestions = {
             answer: "A specific problem that prospective customers of your business are experiencing.",
             explanation: "Products solve pain points."
         }
+    ],
+    "Data Analyst": [
+        {
+            question: "What is the difference between Data Analyst and Data Scientist?",
+            answer: "Data Analysts focus on processing and performing statistical analysis on existing datasets to answer specific questions. Data Scientists build algorithms and predictive models to solve complex problems.",
+            explanation: "Analysts work with structured data and visualization; Scientists work with machine learning and advanced modeling."
+        },
+        {
+            question: "Explain what SQL JOIN types are?",
+            answer: "INNER JOIN returns matching rows from both tables. LEFT JOIN returns all rows from left table and matching rows from right. RIGHT JOIN is opposite. FULL OUTER JOIN returns all rows from both tables.",
+            explanation: "JOINs are essential for combining data from multiple tables based on relationships."
+        },
+        {
+            question: "What is data cleaning and why is it important?",
+            answer: "Data cleaning is the process of fixing or removing incorrect, corrupted, incorrectly formatted, duplicate, or incomplete data within a dataset.",
+            explanation: "Clean data is crucial for accurate analysis; garbage in, garbage out."
+        },
+        {
+            question: "What is the difference between mean, median, and mode?",
+            answer: "Mean is the average of all values. Median is the middle value when data is ordered. Mode is the most frequently occurring value.",
+            explanation: "Different measures of central tendency are useful for different data distributions."
+        },
+        {
+            question: "What is data normalization?",
+            answer: "Scaling numerical data to a standard range (typically 0-1 or -1 to 1) so that comparisons and analyses are not skewed by different scales.",
+            explanation: "Prevents variables with larger scales from dominating the analysis."
+        },
+        {
+            question: "Explain what a pivot table is.",
+            answer: "A data summarization tool that automatically sorts, counts, and totals data stored in one table and creates a second table displaying the summarized data.",
+            explanation: "Essential for quickly analyzing large datasets in Excel and other tools."
+        },
+        {
+            question: "What is the difference between correlation and causation?",
+            answer: "Correlation means two variables move together, but doesn't imply one causes the other. Causation means one variable directly affects another.",
+            explanation: "Correlation ≠ Causation is a fundamental principle in data analysis."
+        },
+        {
+            question: "What is a KPI (Key Performance Indicator)?",
+            answer: "A measurable value that demonstrates how effectively a company is achieving key business objectives.",
+            explanation: "KPIs should be SMART: Specific, Measurable, Achievable, Relevant, Time-bound."
+        },
+        {
+            question: "Explain what ETL stands for.",
+            answer: "Extract, Transform, Load. It's the process of extracting data from source systems, transforming it into a suitable format, and loading it into a target database.",
+            explanation: "ETL is fundamental to data warehousing and business intelligence."
+        },
+        {
+            question: "What is a NULL value and how do you handle it?",
+            answer: "NULL represents missing or undefined data. Handle it by removing rows, imputing with mean/median/mode, or using specific missing value indicators depending on context.",
+            explanation: "Proper NULL handling is critical for data quality and analysis accuracy."
+        },
+        {
+            question: "What is the difference between OLTP and OLAP?",
+            answer: "OLTP (Online Transaction Processing) is for day-to-day transactional operations. OLAP (Online Analytical Processing) is optimized for complex queries and data analysis.",
+            explanation: "OLTP: Fast, simple queries. OLAP: Complex, aggregated analytical queries."
+        },
+        {
+            question: "What is a data warehouse?",
+            answer: "A centralized repository that stores integrated data from multiple sources, optimized for query and analysis rather than transaction processing.",
+            explanation: "Designed for historical analysis and business intelligence reporting."
+        },
+        {
+            question: "Explain the concept of data sampling.",
+            answer: "Selecting a subset of data from a larger dataset for analysis, used when analyzing the entire dataset is impractical or unnecessary.",
+            explanation: "Proper sampling techniques ensure the subset is representative of the whole."
+        },
+        {
+            question: "What is standard deviation?",
+            answer: "A measure of the amount of variation or dispersion in a set of values. Low standard deviation means values are close to the mean.",
+            explanation: "Helps understand data spread and variability in distributions."
+        },
+        {
+            question: "What is A/B testing in analytics?",
+            answer: "A method of comparing two versions (A and B) of something to determine which performs better based on a specific metric.",
+            explanation: "Used extensively in data-driven decision making and optimization."
+        },
+        {
+            question: "Explain what data visualization is and why it's important.",
+            answer: "The graphical representation of data and information using visual elements like charts, graphs, and maps to make data easier to understand.",
+            explanation: "Humans process visual information faster than raw numbers or text."
+        },
+        {
+            question: "What is the difference between structured and unstructured data?",
+            answer: "Structured data is organized in a predefined format (like databases). Unstructured data lacks a predefined format (like text, images, videos).",
+            explanation: "Structured data is easier to analyze; unstructured requires special processing."
+        },
+        {
+            question: "What is outlier detection?",
+            answer: "Identifying data points that significantly differ from other observations, which could indicate errors or interesting anomalies.",
+            explanation: "Methods include Z-score, IQR, and visualization techniques."
+        },
+        {
+            question: "Explain what cohort analysis is.",
+            answer: "A type of behavioral analytics that groups users who share common characteristics over time to track their behavior patterns.",
+            explanation: "Useful for understanding user retention, engagement, and lifecycle."
+        },
+        {
+            question: "What is the difference between primary and foreign keys?",
+            answer: "Primary key uniquely identifies each record in a table. Foreign key is a field that links to the primary key of another table.",
+            explanation: "These establish relationships between tables in relational databases."
+        },
+        {
+            question: "What is time series analysis?",
+            answer: "Analyzing data points collected or recorded at specific time intervals to identify trends, seasonality, and patterns.",
+            explanation: "Used for forecasting, trend analysis, and understanding temporal patterns."
+        },
+        {
+            question: "What tools do you use for data analysis?",
+            answer: "Commonly SQL for data extraction, Excel/Python/R for analysis, and Tableau/Power BI for visualization.",
+            explanation: "Tool choice depends on data size, complexity, and business requirements."
+        },
+        {
+            question: "What is data profiling?",
+            answer: "The process of examining data to understand its structure, content, quality, and relationships.",
+            explanation: "Essential first step before analysis to understand data characteristics."
+        },
+        {
+            question: "Explain what dashboard design best practices are.",
+            answer: "Keep it simple, use appropriate chart types, ensure data is accurate, make it actionable, and design for your audience.",
+            explanation: "Good dashboards tell a story and enable quick decision-making."
+        },
+        {
+            question: "What is data granularity?",
+            answer: "The level of detail or summarization in a dataset. Fine granularity means detailed data; coarse granularity means aggregated data.",
+            explanation: "Balance between detail and performance is key in analytics."
+        },
+        {
+            question: "What is regression analysis?",
+            answer: "A statistical method for examining the relationship between a dependent variable and one or more independent variables.",
+            explanation: "Used for prediction, forecasting, and understanding variable relationships."
+        },
+        {
+            question: "How do you ensure data quality?",
+            answer: "Through data validation, cleaning, standardization, duplicate removal, and ongoing monitoring processes.",
+            explanation: "Data quality directly impacts the reliability of analysis and decisions."
+        },
+        {
+            question: "What is the 80/20 rule in data analysis?",
+            answer: "Also known as Pareto Principle: roughly 80% of effects come from 20% of causes. Often 80% of analysis time is spent on data cleaning.",
+            explanation: "Helps prioritize efforts and identify key drivers in analysis."
+        },
+        {
+            question: "What is the difference between a bar chart and histogram?",
+            answer: "Bar charts display categorical data with gaps between bars. Histograms display continuous numerical data with no gaps.",
+            explanation: "Choose based on whether data is categorical or continuous."
+        },
+        {
+            question: "What is data aggregation?",
+            answer: "Combining data from multiple sources or records into summary statistics like sum, average, count, min, or max.",
+            explanation: "Essential for reporting and high-level analysis."
+        }
     ]
 };

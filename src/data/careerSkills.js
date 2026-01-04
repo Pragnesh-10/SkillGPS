@@ -103,6 +103,19 @@ export const careerSkills = {
             advanced: ['Python', 'R', 'SAS', 'Advanced BI Tools']
         },
         soft: ['Communication', 'Critical Thinking', 'Problem Solving', 'Stakeholder Management', 'Documentation', 'Business Acumen']
+    },
+    'Data Analyst': {
+        technical: {
+            essential: ['SQL', 'Excel', 'Data Visualization', 'Statistics', 'Data Analysis', 'Pandas', 'Data Cleaning'],
+            recommended: ['Python', 'R', 'Tableau', 'Power BI', 'Google Analytics', 'A/B Testing', 'ETL Processes'],
+            advanced: ['Advanced Statistics', 'Predictive Modeling', 'Machine Learning Basics', 'Big Data Tools', 'Data Warehousing']
+        },
+        tools: {
+            essential: ['Excel', 'SQL', 'Tableau', 'Power BI'],
+            recommended: ['Python', 'R', 'Google Data Studio', 'Looker', 'Jupyter Notebook'],
+            advanced: ['Apache Spark', 'Snowflake', 'dbt', 'Airflow', 'AWS Redshift']
+        },
+        soft: ['Analytical Thinking', 'Attention to Detail', 'Communication', 'Problem Solving', 'Data Storytelling', 'Business Acumen']
     }
 };
 
