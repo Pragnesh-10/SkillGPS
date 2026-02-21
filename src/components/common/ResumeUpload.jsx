@@ -9,7 +9,7 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
     const [fileName, setFileName] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [parsedData, setParsedData] = useState(null);
-    const [countdown, setCountdown] = useState(10);
+    const [countdown, setCountdown] = useState(60);
     const deleteTimerRef = useRef(null);
     const countdownTimerRef = useRef(null);
 
@@ -62,8 +62,8 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
                 // Store in localStorage
                 localStorage.setItem('resumeData', JSON.stringify(parsed));
 
-                // Reset countdown to 30 seconds
-                setCountdown(30);
+                // Reset countdown to 60 seconds
+                setCountdown(60);
             }, 800);
         };
 
@@ -84,7 +84,7 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
         setResumeText('');
         setFileName('');
         setParsedData(null);
-        setCountdown(10);
+        setCountdown(60);
         localStorage.removeItem('resumeData');
         if (onResumeAnalyzed) {
             onResumeAnalyzed(null);
@@ -100,7 +100,7 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
                 setResumeText('');
                 setFileName('');
                 setParsedData(null);
-                setCountdown(10);
+                setCountdown(60);
                 if (onResumeAnalyzed) {
                     onResumeAnalyzed(null);
                 }
@@ -134,12 +134,12 @@ const ResumeUpload = ({ onResumeAnalyzed }) => {
                 });
             }, 1000);
 
-            // Set delete timer (deletes after 10 seconds)
+            // Set delete timer (deletes after 60 seconds)
             deleteTimerRef.current = setTimeout(() => {
                 // Only remove from localStorage, keep UI state for skills analysis
                 localStorage.removeItem('resumeData');
-                setCountdown(10);
-            }, 10000); // 10 seconds
+                setCountdown(60);
+            }, 60000); // 60 seconds
 
             // Cleanup on unmount
             return () => {
