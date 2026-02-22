@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { processMessage, getDomainFromMessage } from '../../services/chatbotBrain';
+import { processMessage, getDomainFromMessage, analyzeGitHubRepos, formatGitHubAnalysis, generateICSFile, extractDomain } from '../../services/chatbotBrain';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageCircle, X, Send, Sparkles, Cpu,
-    RefreshCw, Mic, MicOff, Volume2, VolumeX, FileUp
+    RefreshCw, Mic, MicOff, Volume2, VolumeX, FileUp,
+    Github, Calendar, Briefcase, Linkedin
 } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
+import { careerSkills } from '../../data/careerSkills';
 
 // ─── Lightweight Markdown Renderer ───────────────────────────────
 const renderMarkdown = (text) => {
@@ -53,7 +55,9 @@ const renderMarkdown = (text) => {
     html = html
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>');
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Links: [text](url)
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
 
     // Line breaks (convert double newlines to paragraphs, single to br)
     html = html.replace(/\n\n/g, '<br/><br/>').replace(/\n/g, '<br/>');
@@ -104,7 +108,8 @@ const Chatbot = () => {
     const recognitionRef = useRef(null);
     const resumeInputRef = useRef(null);
 
-    // Interaction Modes: 'normal', 'selecting_domain', 'answering_question', 'post_answer'
+    // Interaction Modes: 'normal', 'selecting_domain', 'answering_question', 'post_answer',
+    //                    'career_advisor', 'github_waiting', 'linkedin_waiting'
     const [interactionMode, setInteractionMode] = useState('normal');
     const [currentContext, setCurrentContext] = useState({ domain: null, questionIndex: null });
 
@@ -461,6 +466,123 @@ const Chatbot = () => {
                 return;
             }
 
+            // ─── GitHub Analysis Mode ─────────────────────────────
+            if (interactionMode === 'github_waiting') {
+                const input = text.trim();
+                // Extract username from URL or raw text
+                let username = input;
+                const urlMatch = input.match(/github\.com\/([a-zA-Z0-9_-]+)/);
+                if (urlMatch) username = urlMatch[1];
+                username = username.replace(/[^a-zA-Z0-9_-]/g, '');
+
+                if (!username) {
+                    addBotMessage("That doesn't look like a valid GitHub username. Please try again.");
+                    setIsTyping(false);
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
+                    if (!res.ok) {
+                        if (res.status === 404) {
+                            addBotMessage(`❌ GitHub user **${username}** not found. Please check the username and try again.`);
+                        } else if (res.status === 403) {
+                            addBotMessage(`⚠️ GitHub API rate limit reached. Please try again in a few minutes.`);
+                        } else {
+                            addBotMessage(`❌ Could not fetch data for **${username}**. Please try again.`);
+                        }
+                        setIsTyping(false);
+                        return;
+                    }
+                    const repos = await res.json();
+                    if (repos.length === 0) {
+                        addBotMessage(`**${username}** has no public repositories. Try a different profile!`);
+                        setIsTyping(false);
+                        setInteractionMode('normal');
+                        return;
+                    }
+                    const analysis = analyzeGitHubRepos(repos);
+                    const formatted = formatGitHubAnalysis(analysis, username);
+                    addBotMessage(formatted);
+                    if (analysis.primaryDomain) setLastDomain(analysis.primaryDomain);
+                } catch (err) {
+                    console.error('GitHub fetch error:', err);
+                    addBotMessage("❌ Network error while fetching GitHub data. Please check your connection and try again.");
+                }
+                setInteractionMode('normal');
+                setIsTyping(false);
+                return;
+            }
+
+            // ─── LinkedIn Import Mode ────────────────────────────────
+            if (interactionMode === 'linkedin_waiting') {
+                // Parse pasted LinkedIn profile text
+                const profileText = text.trim();
+                if (profileText.length < 20) {
+                    addBotMessage("That seems too short. Please paste your full LinkedIn profile text.");
+                    setIsTyping(false);
+                    return;
+                }
+
+                setTimeout(() => {
+                    const lowerText = profileText.toLowerCase();
+                    const allSkills = {};
+                    const domainMatches = {};
+
+                    Object.entries(careerSkills).forEach(([domain, skills]) => {
+                        let matchCount = 0;
+                        const allDomainSkills = [
+                            ...(skills.technical?.essential || []),
+                            ...(skills.technical?.recommended || []),
+                            ...(skills.tools?.essential || []),
+                        ];
+                        allDomainSkills.forEach(skill => {
+                            if (lowerText.includes(skill.toLowerCase())) {
+                                allSkills[skill] = domain;
+                                matchCount++;
+                            }
+                        });
+                        if (matchCount > 0) domainMatches[domain] = matchCount;
+                    });
+
+                    const sortedDomains = Object.entries(domainMatches).sort((a, b) => b[1] - a[1]);
+                    const foundSkills = Object.keys(allSkills);
+
+                    if (foundSkills.length === 0) {
+                        addBotMessage("I couldn't detect any career-specific skills from that text. \ud83e\udd14\n\nPlease make sure you've pasted your full LinkedIn profile, including the Skills section.\n\nOr try uploading your resume instead using the \ud83d\udcce button!");
+                        setInteractionMode('normal');
+                        setIsTyping(false);
+                        return;
+                    }
+
+                    let response = `## \ud83d\udd17 LinkedIn Profile Analysis\n\n`;
+                    response += `### \u2705 Skills Detected (${foundSkills.length})\n${foundSkills.join(', ')}\n\n`;
+                    response += `### \ud83c\udfaf Career Match\n\n`;
+                    response += `| Career | Match Score |\n|--------|-------------|\n`;
+                    sortedDomains.slice(0, 5).forEach(([domain, count]) => {
+                        const pct = Math.min(100, Math.round((count / Math.max(foundSkills.length, 1)) * 100));
+                        response += `| **${domain}** | ${'\ud83d\udfe9'.repeat(Math.ceil(pct / 20))} ${pct}% |\n`;
+                    });
+                    response += `\n`;
+
+                    const topDomain = sortedDomains[0]?.[0];
+                    if (topDomain && careerSkills[topDomain]) {
+                        const essentials = careerSkills[topDomain].technical?.essential || [];
+                        const gaps = essentials.filter(s => !lowerText.includes(s.toLowerCase()));
+                        if (gaps.length > 0) {
+                            response += `### \u26a0\ufe0f Skill Gaps for ${topDomain}\nYou should learn: **${gaps.join(', ')}**\n\n`;
+                        }
+                        setLastDomain(topDomain);
+                    }
+
+                    response += `\ud83d\udca1 *Want courses or a roadmap for your top match? Just ask!*`;
+                    addBotMessage(response);
+                    setInteractionMode('normal');
+                    setIsTyping(false);
+                }, 800);
+                return;
+            }
+
             // ─── Normal Mode — Use Brain Engine ──────────────────
             // Check for career advisor trigger
             const lowerText = text.toLowerCase();
@@ -475,7 +597,7 @@ const Chatbot = () => {
             }
 
             // Process with NLP Brain
-            setTimeout(() => {
+            setTimeout(async () => {
                 const response = processMessage(text, { lastDomain, resumeText });
 
                 // Check if brain wants to trigger interview mode
@@ -489,6 +611,33 @@ const Chatbot = () => {
 
                     addBotMessage("Let's practice some interview questions! 🎤\n\nWhich domain would you like?\n\n" + domains.map(d => `• ${d}`).join('\n'));
                     setInteractionMode('selecting_domain');
+                } else if (response === '__TRIGGER_GITHUB_ANALYSIS__') {
+                    addBotMessage("I'd love to analyze your GitHub portfolio! 🐙\n\nPlease paste your **GitHub username** or **profile URL** below:\n\n*Example: `octocat` or `https://github.com/octocat`*");
+                    setInteractionMode('github_waiting');
+                } else if (response === '__TRIGGER_LINKEDIN_IMPORT__') {
+                    addBotMessage("Great! I can analyze your LinkedIn profile to suggest career paths! 🔗\n\n**How to share your data:**\n1. Go to your LinkedIn profile\n2. Select all text (Ctrl+A / Cmd+A)\n3. Copy and paste it here\n\nOr upload your **LinkedIn PDF export** using the 📎 button.\n\n*Your data stays local — nothing is sent to any server.*");
+                    setInteractionMode('linkedin_waiting');
+                } else if (response.startsWith('__TRIGGER_CALENDAR_DOWNLOAD__')) {
+                    const calDomain = response.replace('__TRIGGER_CALENDAR_DOWNLOAD__', '').trim() || lastDomain;
+                    if (calDomain) {
+                        const icsContent = generateICSFile(calDomain);
+                        if (icsContent) {
+                            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `SkillGPS_${calDomain.replace(/[\s/]/g, '_')}_Study_Plan.ics`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            addBotMessage(`✅ **Calendar downloaded!**\n\nYour **${calDomain}** 8-week study plan has been saved as an .ics file.\n\n**Import instructions:**\n• **Google Calendar:** Settings → Import & Export → Import\n• **Apple Calendar:** File → Import\n• **Outlook:** File → Open & Export → Import\n\n📅 Your plan starts next Monday with 5 sessions/week, 2 hours each.`);
+                        } else {
+                            addBotMessage(`I don't have enough data to create a schedule for that domain. Try a specific career like "download calendar data science".`);
+                        }
+                    } else {
+                        addBotMessage(`Which career should I create a calendar for?\n\nSay: **"download calendar data science"** or **"download calendar backend"**`);
+                    }
                 } else {
                     addBotMessage(response);
                 }
@@ -509,7 +658,9 @@ const Chatbot = () => {
     const welcomeSuggestions = useMemo(() => [
         { icon: '🗺️', text: 'How to become a Data Scientist?' },
         { icon: '📚', text: 'Recommend courses for Backend' },
-        { icon: '💡', text: 'Project ideas for beginners' },
+        { icon: '🐙', text: 'Analyze my GitHub profile' },
+        { icon: '💼', text: 'Find jobs for AI/ML' },
+        { icon: '📅', text: 'Schedule a study plan' },
         { icon: '💰', text: 'Compare salary across careers' },
     ], []);
 

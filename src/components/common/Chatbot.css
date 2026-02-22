@@ -314,6 +314,20 @@
     margin: 10px 0;
 }
 
+.message-bot a.chat-link,
+.message-bot a {
+    color: var(--primary);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(168, 192, 98, 0.3);
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.message-bot a:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+}
+
 /* ─── Typing Indicator ────────────────────────────────────────── */
 .typing-indicator {
     display: flex;

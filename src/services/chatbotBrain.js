@@ -98,6 +98,26 @@ const INTENTS = [
         patterns: ['tool', 'tools', 'software', 'ide', 'editor', 'platform', 'framework', 'library', 'technology', 'tech stack'],
         priority: 2,
     },
+    {
+        name: 'github_analysis',
+        patterns: ['github', 'analyze github', 'github profile', 'github portfolio', 'my repos', 'my repositories', 'analyze my github', 'github url', 'github username'],
+        priority: 3,
+    },
+    {
+        name: 'linkedin_import',
+        patterns: ['linkedin', 'linkedin profile', 'import linkedin', 'linkedin data', 'linkedin skills', 'linkedin import'],
+        priority: 3,
+    },
+    {
+        name: 'calendar_schedule',
+        patterns: ['schedule', 'calendar', 'study plan', 'study schedule', 'google calendar', 'ics', 'plan my study', 'create schedule', 'time table', 'timetable', 'weekly plan'],
+        priority: 3,
+    },
+    {
+        name: 'job_search',
+        patterns: ['job', 'jobs', 'job listing', 'job search', 'find jobs', 'openings', 'vacancies', 'hiring', 'apply', 'job portal', 'naukri', 'indeed', 'glassdoor', 'job board'],
+        priority: 3,
+    },
 ];
 
 // ─── Tokenization ────────────────────────────────────────────────────
@@ -540,10 +560,291 @@ const generateToolResponse = (domain) => {
     return `## 🔧 Tools for ${domain}\n\n**Must-Have:**\n${essential}\n\n**Recommended:**\n${recommended}\n\n**Advanced:**\n${advanced}\n\n💡 *Start with the must-have tools. As you grow, gradually adopt the recommended and advanced ones.*`;
 };
 
+// ─── Job Search Response ─────────────────────────────────────────────
+const JOB_SEARCH_URLS = {
+    'Data Scientist': { keyword: 'data+scientist', naukri: 'data-scientist' },
+    'Backend Developer': { keyword: 'backend+developer', naukri: 'backend-developer' },
+    'Frontend Developer': { keyword: 'frontend+developer', naukri: 'frontend-developer' },
+    'UI/UX Designer': { keyword: 'ui+ux+designer', naukri: 'ui-ux-designer' },
+    'AI/ML Engineer': { keyword: 'machine+learning+engineer', naukri: 'machine-learning-engineer' },
+    'Product Manager': { keyword: 'product+manager', naukri: 'product-manager' },
+    'Cybersecurity Analyst': { keyword: 'cybersecurity+analyst', naukri: 'cyber-security' },
+    'Cloud Engineer': { keyword: 'cloud+engineer', naukri: 'cloud-engineer' },
+    'Business Analyst': { keyword: 'business+analyst', naukri: 'business-analyst' },
+    'Data Analyst': { keyword: 'data+analyst', naukri: 'data-analyst' },
+};
+
+const generateJobSearchResponse = (domain) => {
+    if (!domain) {
+        let response = `## 💼 Job Search — All Careers\n\nPick a career to see live job listings:\n\n`;
+        response += `| Career | LinkedIn | Indeed | Naukri |\n|--------|----------|--------|--------|\n`;
+        Object.entries(JOB_SEARCH_URLS).forEach(([name, urls]) => {
+            response += `| **${name}** | [Search](https://www.linkedin.com/jobs/search/?keywords=${urls.keyword}) | [Search](https://www.indeed.com/jobs?q=${urls.keyword}) | [Search](https://www.naukri.com/${urls.naukri}-jobs) |\n`;
+        });
+        response += `\n💡 *Links open in your browser. Say a specific career like "jobs for data science" for a detailed view!*`;
+        return response;
+    }
+
+    const urls = JOB_SEARCH_URLS[domain];
+    if (!urls) {
+        return `I don't have job search links for that domain. Try one of: ${DOMAINS.join(', ')}`;
+    }
+
+    const skills = careerSkills[domain];
+    const essentials = skills?.technical?.essential?.slice(0, 5).join(', ') || 'Relevant skills';
+
+    let response = `## 💼 ${domain} — Job Listings\n\n`;
+    response += `### 🔍 Search on Top Platforms\n\n`;
+    response += `| Platform | Link | Focus |\n|----------|------|-------|\n`;
+    response += `| **LinkedIn** | [View Jobs](https://www.linkedin.com/jobs/search/?keywords=${urls.keyword}) | Global opportunities |\n`;
+    response += `| **Indeed** | [View Jobs](https://www.indeed.com/jobs?q=${urls.keyword}) | International listings |\n`;
+    response += `| **Glassdoor** | [View Jobs](https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${urls.keyword}) | Reviews + salaries |\n`;
+    response += `| **Naukri** | [View Jobs](https://www.naukri.com/${urls.naukri}-jobs) | India-focused |\n`;
+    response += `| **Internshala** | [View Jobs](https://internshala.com/internships/${urls.naukri}-internship) | Internships |\n\n`;
+    response += `### 📋 Key Skills Employers Look For\n${essentials}\n\n`;
+    response += `💡 *Tip: Tailor your resume with these skills. Want me to analyze your resume or suggest projects to strengthen your profile?*`;
+    return response;
+};
+
+// ─── Calendar / Study Schedule Response ──────────────────────────────
+const generateCalendarResponse = (domain) => {
+    if (!domain) {
+        return `I can create a study schedule for any career! Which domain?\n\n${DOMAINS.map(d => `• ${d}`).join('\n')}\n\n💡 *Just say "schedule for data science" or "study plan for backend"!*`;
+    }
+
+    const skills = careerSkills[domain];
+    const domainCourses = courses[domain];
+    if (!skills) {
+        return `I don't have enough data to create a schedule for that domain yet.`;
+    }
+
+    const essentials = skills.technical?.essential?.slice(0, 4) || ['Fundamentals'];
+    const recommended = skills.technical?.recommended?.slice(0, 3) || ['Frameworks'];
+    const advanced = skills.technical?.advanced?.slice(0, 2) || ['Specialization'];
+    const firstCourse = domainCourses?.beginner?.[0];
+
+    let response = `## 📅 Study Schedule — ${domain}\n\n`;
+    response += `### 📆 8-Week Intensive Plan\n\n`;
+    response += `| Week | Focus | Topics | Hours/Day |\n|------|-------|--------|-----------|\n`;
+    response += `| 1-2 | 🟢 Foundations | ${essentials.slice(0, 2).join(', ')} | 2-3 hrs |\n`;
+    response += `| 3-4 | 🟢 Core Skills | ${essentials.slice(2).join(', ') || 'Practice problems'} | 2-3 hrs |\n`;
+    response += `| 5-6 | 🔵 Intermediate | ${recommended.join(', ')} | 3-4 hrs |\n`;
+    response += `| 7-8 | 🟣 Projects | Build portfolio project | 3-4 hrs |\n\n`;
+
+    // Generate ICS content for the study plan
+    const icsEvents = [
+        { summary: `${domain}: Learn ${essentials[0]}`, weekOffset: 0 },
+        { summary: `${domain}: Learn ${essentials[1] || essentials[0]}`, weekOffset: 1 },
+        { summary: `${domain}: Practice ${essentials.slice(2).join(' & ') || 'Core Concepts'}`, weekOffset: 2 },
+        { summary: `${domain}: ${firstCourse ? firstCourse.title : 'Online Course'}`, weekOffset: 3 },
+        { summary: `${domain}: Learn ${recommended[0] || 'Frameworks'}`, weekOffset: 4 },
+        { summary: `${domain}: Learn ${recommended[1] || 'Tools'}`, weekOffset: 5 },
+        { summary: `${domain}: Build Portfolio Project`, weekOffset: 6 },
+        { summary: `${domain}: Polish & Review`, weekOffset: 7 },
+    ];
+
+    response += `### 📥 Add to Your Calendar\n\n`;
+    response += `Type **"download calendar ${domain.toLowerCase()}"** to get an **.ics file** you can import into Google Calendar, Apple Calendar, or Outlook!\n\n`;
+
+    // Google Calendar quick-add link for the first session
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() + ((1 + 7 - startDate.getDay()) % 7 || 7)); // next Monday
+    const startStr = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+    const endStr = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`SkillGPS: Start ${domain} Journey`)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(`Week 1: Learn ${essentials[0]}. Start your ${domain} journey with SkillGPS!`)}`;
+
+    response += `Or **[Add First Session to Google Calendar](${gcalUrl})**\n\n`;
+    response += `💡 *Consistency beats intensity! Even 1 hour/day compounds into massive growth.*`;
+    return response;
+};
+
+// ─── ICS File Generator (exported for Chatbot.jsx to use) ────────────
+export const generateICSFile = (domain) => {
+    const skills = careerSkills[domain];
+    if (!skills) return null;
+
+    const essentials = skills.technical?.essential || ['Fundamentals'];
+    const recommended = skills.technical?.recommended || ['Frameworks'];
+
+    const now = new Date();
+    const startMonday = new Date(now);
+    startMonday.setDate(startMonday.getDate() + ((1 + 7 - startMonday.getDay()) % 7 || 7));
+    startMonday.setHours(9, 0, 0, 0);
+
+    const formatDate = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const events = [
+        { title: `Learn ${essentials[0]}`, week: 0 },
+        { title: `Learn ${essentials[1] || 'Core Concepts'}`, week: 1 },
+        { title: `Practice ${essentials.slice(2, 4).join(' & ') || 'Problems'}`, week: 2 },
+        { title: `Online Course Deep-Dive`, week: 3 },
+        { title: `Learn ${recommended[0] || 'Frameworks'}`, week: 4 },
+        { title: `Learn ${recommended[1] || 'Advanced Tools'}`, week: 5 },
+        { title: `Build Portfolio Project`, week: 6 },
+        { title: `Polish & Review`, week: 7 },
+    ];
+
+    let ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SkillGPS//Study Plan//EN\nCALSCALE:GREGORIAN\n`;
+
+    events.forEach(evt => {
+        const start = new Date(startMonday);
+        start.setDate(start.getDate() + evt.week * 7);
+        const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+
+        // Add 5 sessions per week (Mon-Fri)
+        for (let day = 0; day < 5; day++) {
+            const sessionStart = new Date(start);
+            sessionStart.setDate(sessionStart.getDate() + day);
+            const sessionEnd = new Date(sessionStart.getTime() + 2 * 60 * 60 * 1000);
+
+            ics += `BEGIN:VEVENT\n`;
+            ics += `DTSTART:${formatDate(sessionStart)}\n`;
+            ics += `DTEND:${formatDate(sessionEnd)}\n`;
+            ics += `SUMMARY:SkillGPS: ${domain} — ${evt.title}\n`;
+            ics += `DESCRIPTION:Week ${evt.week + 1} of your ${domain} study plan. Powered by SkillGPS.\n`;
+            ics += `END:VEVENT\n`;
+        }
+    });
+
+    ics += `END:VCALENDAR`;
+    return ics;
+};
+
+// ─── GitHub Analysis (exported for Chatbot.jsx to use) ───────────────
+const LANGUAGE_TO_DOMAIN = {
+    'Python': ['Data Scientist', 'AI/ML Engineer', 'Backend Developer', 'Data Analyst'],
+    'JavaScript': ['Frontend Developer', 'Backend Developer'],
+    'TypeScript': ['Frontend Developer', 'Backend Developer'],
+    'Java': ['Backend Developer', 'Android Developer'],
+    'Kotlin': ['Android Developer'],
+    'Swift': ['iOS Developer'],
+    'HTML': ['Frontend Developer', 'UI/UX Designer'],
+    'CSS': ['Frontend Developer', 'UI/UX Designer'],
+    'R': ['Data Scientist', 'Data Analyst'],
+    'SQL': ['Data Analyst', 'Data Scientist', 'Backend Developer'],
+    'Shell': ['Cloud Engineer', 'Backend Developer'],
+    'Go': ['Backend Developer', 'Cloud Engineer'],
+    'Rust': ['Backend Developer'],
+    'C++': ['Backend Developer'],
+    'C#': ['Backend Developer'],
+    'Ruby': ['Backend Developer'],
+    'PHP': ['Backend Developer'],
+    'Jupyter Notebook': ['Data Scientist', 'AI/ML Engineer', 'Data Analyst'],
+    'Dockerfile': ['Cloud Engineer'],
+    'HCL': ['Cloud Engineer'],
+    'SCSS': ['Frontend Developer'],
+    'Vue': ['Frontend Developer'],
+    'Dart': ['Frontend Developer'],
+};
+
+export const analyzeGitHubRepos = (repos) => {
+    const languages = {};
+    const topics = new Set();
+    let totalStars = 0;
+    let totalForks = 0;
+
+    repos.forEach(repo => {
+        if (repo.language) {
+            languages[repo.language] = (languages[repo.language] || 0) + 1;
+        }
+        totalStars += repo.stargazers_count || 0;
+        totalForks += repo.forks_count || 0;
+        (repo.topics || []).forEach(t => topics.add(t));
+    });
+
+    // Map languages to career domains
+    const domainScores = {};
+    Object.entries(languages).forEach(([lang, count]) => {
+        const domains = LANGUAGE_TO_DOMAIN[lang] || [];
+        domains.forEach(d => {
+            domainScores[d] = (domainScores[d] || 0) + count;
+        });
+    });
+
+    const sortedDomains = Object.entries(domainScores)
+        .sort((a, b) => b[1] - a[1]);
+
+    const primaryDomain = sortedDomains[0]?.[0] || null;
+    const sortedLangs = Object.entries(languages)
+        .sort((a, b) => b[1] - a[1]);
+
+    // Find skill gaps
+    let skillGaps = [];
+    if (primaryDomain && careerSkills[primaryDomain]) {
+        const essentialSkills = careerSkills[primaryDomain].technical?.essential || [];
+        const userLangs = new Set(Object.keys(languages).map(l => l.toLowerCase()));
+        const userTopics = new Set([...topics].map(t => t.toLowerCase()));
+        skillGaps = essentialSkills.filter(skill => {
+            const lower = skill.toLowerCase();
+            return !userLangs.has(lower) && !userTopics.has(lower);
+        });
+    }
+
+    return {
+        repoCount: repos.length,
+        languages: sortedLangs,
+        totalStars,
+        totalForks,
+        topics: [...topics],
+        domainScores: sortedDomains,
+        primaryDomain,
+        skillGaps: skillGaps.slice(0, 8),
+    };
+};
+
+export const formatGitHubAnalysis = (analysis, username) => {
+    let response = `## 🐙 GitHub Analysis — @${username}\n\n`;
+
+    // Stats overview
+    response += `### 📊 Portfolio Stats\n\n`;
+    response += `| Metric | Value |\n|--------|-------|\n`;
+    response += `| **Repositories** | ${analysis.repoCount} |\n`;
+    response += `| **Total Stars** | ⭐ ${analysis.totalStars} |\n`;
+    response += `| **Total Forks** | 🔱 ${analysis.totalForks} |\n\n`;
+
+    // Languages
+    response += `### 💻 Languages Used\n\n`;
+    response += `| Language | Repos | Strength |\n|----------|-------|----------|\n`;
+    const maxCount = analysis.languages[0]?.[1] || 1;
+    analysis.languages.slice(0, 8).forEach(([lang, count]) => {
+        const bar = '█'.repeat(Math.ceil((count / maxCount) * 5));
+        response += `| **${lang}** | ${count} | ${bar} |\n`;
+    });
+    response += `\n`;
+
+    // Career match
+    if (analysis.domainScores.length > 0) {
+        response += `### 🎯 Career Match\n\n`;
+        response += `| Career | Match Score |\n|--------|-------------|\n`;
+        analysis.domainScores.slice(0, 4).forEach(([domain, score]) => {
+            const pct = Math.min(100, Math.round((score / (analysis.repoCount || 1)) * 100));
+            response += `| **${domain}** | ${'🟩'.repeat(Math.ceil(pct / 20))} ${pct}% |\n`;
+        });
+        response += `\n`;
+    }
+
+    // Skill gaps
+    if (analysis.skillGaps.length > 0 && analysis.primaryDomain) {
+        response += `### ⚠️ Skill Gaps for ${analysis.primaryDomain}\n\n`;
+        response += `You should learn: **${analysis.skillGaps.join(', ')}**\n\n`;
+        response += `💡 *Ask me for "courses for ${analysis.primaryDomain}" or "projects for ${analysis.primaryDomain}" to fill these gaps!*\n\n`;
+    }
+
+    // Topics
+    if (analysis.topics.length > 0) {
+        response += `### 🏷️ Topics\n${analysis.topics.slice(0, 12).join(', ')}\n\n`;
+    }
+
+    response += `🚀 *Great portfolio! Want a roadmap or course recommendations based on your profile?*`;
+    return response;
+};
+
 // ─── General / Fallback Responses ────────────────────────────────────
 const generalResponses = [
-    "I'm not quite sure what you're asking, but I'm great at career guidance! 🎯\n\nTry asking me:\n• *\"What skills do I need for Data Science?\"*\n• *\"Recommend courses for Backend Development\"*\n• *\"Project ideas for beginners\"*\n• *\"How to become an AI/ML Engineer?\"*\n• *\"Compare Data Science vs Data Analysis\"*",
-    "Hmm, I didn't catch that. I'm designed to help with **career navigation**! 🧭\n\nHere's what I can do:\n• 📚 Course recommendations\n• 🛠️ Skill breakdowns\n• 💡 Project ideas\n• 🗺️ Career roadmaps\n• 💰 Salary information\n• 🎤 Interview prep\n\nWhich topic interests you?",
+    "I'm not quite sure what you're asking, but I'm great at career guidance! 🎯\n\nTry asking me:\n• *\"What skills do I need for Data Science?\"*\n• *\"Recommend courses for Backend Development\"*\n• *\"Analyze my GitHub profile\"*\n• *\"Find jobs for AI/ML\"*\n• *\"Schedule a study plan\"*",
+    "Hmm, I didn't catch that. I'm designed to help with **career navigation**! 🧭\n\nHere's what I can do:\n• 📚 Course recommendations\n• 🛠️ Skill breakdowns\n• 💡 Project ideas\n• 🗺️ Career roadmaps\n• 💼 Job listings\n• 🐙 GitHub analysis\n• 📅 Study scheduling\n\nWhich topic interests you?",
     "I'm specialized in career guidance and may not have the answer to that specific question. 🤔\n\nBut I'm an expert in these areas:\n${DOMAINS.map(d => `• ${d}`).join('\\n')}\n\nPick any career and I'll help you plan your learning journey!",
 ];
 
@@ -626,7 +927,29 @@ export const processMessage = (userMessage, context = {}) => {
             }
             return `Which career's tools do you want to learn about?\n\n${DOMAINS.map(d => `• ${d}`).join('\n')}`;
 
+        case 'github_analysis':
+            return '__TRIGGER_GITHUB_ANALYSIS__';
+
+        case 'linkedin_import':
+            return '__TRIGGER_LINKEDIN_IMPORT__';
+
+        case 'calendar_schedule': {
+            // Check for "download calendar" command
+            const lowerText = text.toLowerCase();
+            if (lowerText.includes('download calendar') || lowerText.includes('download ics')) {
+                return `__TRIGGER_CALENDAR_DOWNLOAD__${effectiveDomain || ''}`;
+            }
+            return generateCalendarResponse(effectiveDomain);
+        }
+
+        case 'job_search':
+            return generateJobSearchResponse(effectiveDomain);
+
         default:
+            // Check for calendar download command in non-calendar intents too
+            if (text.toLowerCase().includes('download calendar')) {
+                return `__TRIGGER_CALENDAR_DOWNLOAD__${effectiveDomain || ''}`;
+            }
             // Try to give a domain-specific general response if domain is detected
             if (effectiveDomain) {
                 return generateCareerInfoResponse(effectiveDomain);
@@ -639,3 +962,4 @@ export const processMessage = (userMessage, context = {}) => {
  * Get the extracted domain from a message (used by Chatbot for context tracking)
  */
 export const getDomainFromMessage = (text) => extractDomain(text);
+export { extractDomain };
