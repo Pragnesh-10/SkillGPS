@@ -37,7 +37,6 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Pulse animation when closed */
 .chatbot-toggle-btn:not(.open) {
     animation: pulse-ring 2.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
@@ -54,7 +53,7 @@
     }
 }
 
-/* ─── Chat Window ─────────────────────────────────────────────── */
+
 .chatbot-window {
     width: 400px;
     height: 600px;
@@ -705,5 +704,95 @@
         width: 96vw;
         height: 80vh;
         border-radius: 14px;
+    }
+}
+
+/* ─── AI Mode Styles ───────────────────────────────────────────── */
+.ai-mode-btn.ai-active {
+    color: #fbbf24 !important;
+    background: rgba(251, 191, 36, 0.15) !important;
+}
+
+.ai-mode-btn.ai-active:hover {
+    background: rgba(251, 191, 36, 0.25) !important;
+}
+
+.spin-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Progress Bar */
+.ai-loading-bar {
+    position: relative;
+    width: 100%;
+    height: 22px;
+    background: rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.ai-loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease infinite;
+    transition: width 0.3s ease;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.ai-loading-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.65rem;
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+/* AI Mode Indicator */
+.ai-mode-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    font-size: 0.65rem;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+}
+
+/* Streaming cursor */
+.message-bot.streaming .message::after {
+    content: '▊';
+    animation: blink 0.7s step-end infinite;
+    color: var(--primary);
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
     }
 }

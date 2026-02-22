@@ -1,0 +1,164 @@
+/**
+ * SkillGPS WebLLM Engine — Client-Side Generative AI
+ *
+ * Runs a small LLM entirely in the browser using WebGPU via @mlc-ai/web-llm.
+ * No external API calls. The model downloads once (~900MB) and caches in the browser.
+ */
+
+import * as webllm from '@mlc-ai/web-llm';
+
+// ─── Configuration ───────────────────────────────────────────────────
+const MODEL_ID = 'SmolLM2-1.7B-Instruct-q4f16_1-MLC';
+
+const SYSTEM_PROMPT = `You are SkillGPS Navigator, a friendly and knowledgeable AI career guidance assistant built into the SkillGPS web application.
+
+Your expertise covers these career domains: Data Scientist, Backend Developer, Frontend Developer, UI/UX Designer, AI/ML Engineer, Product Manager, Cybersecurity Analyst, Cloud Engineer, Business Analyst, and Data Analyst.
+
+Guidelines:
+- Give practical, actionable career advice
+- Recommend specific skills, tools, courses, and projects
+- Use markdown formatting: headers (##), bold (**text**), bullet points, tables when useful
+- Use emojis sparingly for engagement (🎯 💡 🚀 📚)
+- Keep responses concise but comprehensive (150-300 words)
+- Be encouraging and supportive
+- When comparing careers, use tables
+- Focus on the Indian tech job market when discussing salaries
+- If asked something outside career guidance, politely redirect to career topics
+
+You have deep knowledge of:
+- Technical skill trees for each career
+- Free and paid course recommendations (Udemy, Coursera, YouTube)
+- Project ideas from beginner to advanced
+- Interview preparation strategies
+- Salary ranges in India (in LPA)
+- Career roadmaps and learning paths
+- Industry tools and frameworks`;
+
+// ─── State ───────────────────────────────────────────────────────────
+let engine = null;
+let isLoading = false;
+let loadError = null;
+
+// ─── WebGPU Support Check ────────────────────────────────────────────
+export const isWebGPUSupported = async () => {
+    try {
+        if (!navigator.gpu) return false;
+        const adapter = await navigator.gpu.requestAdapter();
+        return !!adapter;
+    } catch {
+        return false;
+    }
+};
+
+// ─── Initialize Engine ──────────────────────────────────────────────
+/**
+ * Load the LLM model into the browser.
+ * @param {Function} onProgress - Callback with { progress, text } during download
+ * @returns {Promise<boolean>} - true if successfully loaded
+ */
+export const initEngine = async (onProgress = () => { }) => {
+    if (engine) return true;
+    if (isLoading) return false;
+
+    const supported = await isWebGPUSupported();
+    if (!supported) {
+        loadError = 'WebGPU is not supported in your browser. Please use Chrome 113+ or Edge 113+.';
+        throw new Error(loadError);
+    }
+
+    isLoading = true;
+    loadError = null;
+
+    try {
+        const initProgressCallback = (report) => {
+            // report.progress is 0-1, report.text is a description
+            onProgress({
+                progress: report.progress || 0,
+                text: report.text || 'Loading model...',
+            });
+        };
+
+        engine = await webllm.CreateMLCEngine(MODEL_ID, {
+            initProgressCallback,
+            logLevel: 'SILENT',
+        });
+
+        isLoading = false;
+        return true;
+    } catch (err) {
+        isLoading = false;
+        loadError = err.message;
+        engine = null;
+        throw err;
+    }
+};
+
+// ─── Generate Response (Streaming) ──────────────────────────────────
+/**
+ * Generate a response from the LLM with streaming.
+ * @param {string} userMessage - The user's message
+ * @param {Array} chatHistory - Previous messages [{role, content}, ...]
+ * @param {Function} onToken - Called with each new token as it streams
+ * @param {AbortSignal} signal - Optional abort signal to cancel generation
+ * @returns {Promise<string>} - The complete generated response
+ */
+export const generateResponse = async (userMessage, chatHistory = [], onToken = () => { }, signal = null) => {
+    if (!engine) throw new Error('Model not loaded');
+
+    // Build messages array with system prompt
+    const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...chatHistory.slice(-6), // Keep last 6 messages for context (3 turns)
+        { role: 'user', content: userMessage },
+    ];
+
+    let fullResponse = '';
+
+    try {
+        const asyncGenerator = await engine.chat.completions.create({
+            messages,
+            temperature: 0.7,
+            max_tokens: 512,
+            top_p: 0.9,
+            stream: true,
+        });
+
+        for await (const chunk of asyncGenerator) {
+            if (signal?.aborted) break;
+
+            const delta = chunk.choices[0]?.delta?.content || '';
+            if (delta) {
+                fullResponse += delta;
+                onToken(fullResponse);
+            }
+        }
+    } catch (err) {
+        if (err.name === 'AbortError' || signal?.aborted) {
+            return fullResponse; // Return whatever we generated so far
+        }
+        throw err;
+    }
+
+    return fullResponse;
+};
+
+// ─── Status Helpers ─────────────────────────────────────────────────
+export const isModelReady = () => !!engine;
+export const isModelLoading = () => isLoading;
+export const getLoadError = () => loadError;
+
+export const resetEngine = async () => {
+    if (engine) {
+        try {
+            await engine.resetChat();
+        } catch {
+            // ignore reset errors
+        }
+    }
+};
+
+export const unloadEngine = () => {
+    engine = null;
+    isLoading = false;
+    loadError = null;
+};

@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { processMessage, getDomainFromMessage, analyzeGitHubRepos, formatGitHubAnalysis, generateICSFile, extractDomain, resetContext } from '../../services/chatbotBrain';
+import { initEngine, generateResponse, isModelReady, isWebGPUSupported, resetEngine, unloadEngine } from '../../services/webllmEngine';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    MessageCircle, X, Send, Sparkles, Cpu,
+    MessageCircle, X, Send, Sparkles, Cpu, Zap,
     RefreshCw, Mic, MicOff, Volume2, VolumeX, FileUp,
-    Github, Calendar, Briefcase, Linkedin, Download
+    Github, Calendar, Briefcase, Linkedin, Download, Loader
 } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
@@ -112,6 +113,15 @@ const Chatbot = () => {
     //                    'career_advisor', 'github_waiting', 'linkedin_waiting'
     const [interactionMode, setInteractionMode] = useState('normal');
     const [currentContext, setCurrentContext] = useState({ domain: null, questionIndex: null });
+
+    // AI Mode State (WebLLM)
+    const [aiMode, setAiMode] = useState(false);
+    const [modelLoading, setModelLoading] = useState(false);
+    const [loadProgress, setLoadProgress] = useState({ progress: 0, text: '' });
+    const [modelReady, setModelReady] = useState(false);
+    const [streamingMessage, setStreamingMessage] = useState(null);
+    const [aiChatHistory, setAiChatHistory] = useState([]);
+    const abortControllerRef = useRef(null);
 
     const messagesEndRef = useRef(null);
 
@@ -240,7 +250,50 @@ const Chatbot = () => {
         setResumeText('');
         setLastDomain(null);
         resetContext(); // Clear NLP conversation memory
+        setAiChatHistory([]);
+        setStreamingMessage(null);
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+        if (modelReady) resetEngine();
     };
+
+    // ─── AI Mode Toggle ──────────────────────────────────────────
+    const toggleAiMode = useCallback(async () => {
+        if (aiMode) {
+            // Turning off AI mode
+            setAiMode(false);
+            return;
+        }
+
+        // Check WebGPU support
+        const supported = await isWebGPUSupported();
+        if (!supported) {
+            addBotMessage("⚠️ **WebGPU Not Supported**\n\nYour browser doesn't support WebGPU, which is needed for the AI model.\n\n**How to fix:**\n• Use **Chrome 113+** or **Edge 113+**\n• Make sure hardware acceleration is enabled\n• On Mac, try Safari Technology Preview\n\nDon't worry — the NLP brain still works great without AI mode! 🧠");
+            return;
+        }
+
+        setAiMode(true);
+
+        if (!isModelReady()) {
+            setModelLoading(true);
+            setLoadProgress({ progress: 0, text: 'Initializing AI engine...' });
+
+            try {
+                await initEngine((progress) => {
+                    setLoadProgress(progress);
+                });
+                setModelReady(true);
+                setModelLoading(false);
+                addBotMessage("🤖 **AI Mode Activated!**\n\nI'm now powered by a generative AI model running **entirely in your browser**. No data leaves your device!\n\nI can now have more natural conversations about any career topic. Try asking me anything!");
+            } catch (err) {
+                setModelLoading(false);
+                setAiMode(false);
+                addBotMessage(`❌ **Failed to load AI model**\n\n${err.message}\n\nThe NLP brain is still available — just chat normally!`);
+            }
+        }
+    }, [aiMode, modelReady]);
 
     const addBotMessage = (text) => {
         setMessages(prev => [...prev, { id: prev.length + 1, text, sender: 'bot' }]);
@@ -584,7 +637,7 @@ const Chatbot = () => {
                 return;
             }
 
-            // ─── Normal Mode — Use Brain Engine ──────────────────
+            // ─── Normal Mode — Use Brain Engine or AI ─────────────
             // Check for career advisor trigger
             const lowerText = text.toLowerCase();
             if (lowerText.includes('career advice') || lowerText.includes('guide me') || lowerText.includes('help me choose')) {
@@ -597,6 +650,51 @@ const Chatbot = () => {
                 return;
             }
 
+            // ─── AI Mode: Use WebLLM for generative responses ────
+            if (aiMode && modelReady) {
+                setIsTyping(true);
+                const controller = new AbortController();
+                abortControllerRef.current = controller;
+
+                // Add a streaming placeholder message
+                const streamId = Date.now();
+                setMessages(prev => [...prev, { id: streamId, text: '...', sender: 'bot', streaming: true }]);
+
+                try {
+                    const newHistory = [...aiChatHistory, { role: 'user', content: text }];
+
+                    const fullResponse = await generateResponse(
+                        text,
+                        aiChatHistory,
+                        (partialText) => {
+                            // Update the streaming message in real-time
+                            setMessages(prev => prev.map(m =>
+                                m.id === streamId ? { ...m, text: partialText } : m
+                            ));
+                        },
+                        controller.signal
+                    );
+
+                    // Finalize the message (remove streaming flag)
+                    setMessages(prev => prev.map(m =>
+                        m.id === streamId ? { ...m, text: fullResponse, streaming: false } : m
+                    ));
+
+                    // Update chat history for context
+                    setAiChatHistory([...newHistory, { role: 'assistant', content: fullResponse }]);
+                    speakText(fullResponse);
+                } catch (err) {
+                    setMessages(prev => prev.map(m =>
+                        m.id === streamId ? { ...m, text: 'Sorry, I had trouble generating a response. Please try again.', streaming: false } : m
+                    ));
+                }
+
+                abortControllerRef.current = null;
+                setIsTyping(false);
+                return;
+            }
+
+            // ─── NLP Brain Mode ──────────────────────────────────
             // Process with NLP Brain
             setTimeout(async () => {
                 const response = processMessage(text, { lastDomain, resumeText });
@@ -754,6 +852,14 @@ ${messagesHtml}
                                 <span className="chatbot-title-badge">Smart</span>
                             </div>
                             <div className="chatbot-header-actions">
+                                <button
+                                    onClick={toggleAiMode}
+                                    className={`chatbot-close-btn ai-mode-btn ${aiMode ? 'ai-active' : ''}`}
+                                    title={aiMode ? 'AI Mode ON (click to disable)' : 'Enable AI Mode (runs in browser)'}
+                                    disabled={modelLoading}
+                                >
+                                    {modelLoading ? <Loader size={16} className="spin-icon" /> : <Zap size={16} />}
+                                </button>
                                 <button onClick={() => setIsMuted(!isMuted)} className="chatbot-close-btn" title={isMuted ? "Unmute" : "Mute"}>
                                     {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                                 </button>
@@ -770,6 +876,21 @@ ${messagesHtml}
                                     <X size={16} />
                                 </button>
                             </div>
+                            {/* AI Model Loading Progress Bar */}
+                            {modelLoading && (
+                                <div className="ai-loading-bar">
+                                    <div className="ai-loading-progress" style={{ width: `${Math.round(loadProgress.progress * 100)}%` }} />
+                                    <span className="ai-loading-text">
+                                        {loadProgress.text || 'Loading AI model...'} ({Math.round(loadProgress.progress * 100)}%)
+                                    </span>
+                                </div>
+                            )}
+                            {/* AI Mode Indicator */}
+                            {aiMode && !modelLoading && (
+                                <div className="ai-mode-indicator">
+                                    <Zap size={12} /> AI Mode — responses generated by in-browser LLM
+                                </div>
+                            )}
                         </div>
 
                         {/* Messages or Welcome */}
