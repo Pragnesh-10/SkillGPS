@@ -305,10 +305,7 @@
     border-collapse: collapse;
     margin: 8px 0;
     font-size: 0.8rem;
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    table-layout: auto;
 }
 
 .message-bot table::-webkit-scrollbar {
@@ -320,9 +317,14 @@
     border-radius: 10px;
 }
 
+.message-bot thead th,
+.message-bot tbody td {
+    vertical-align: middle;
+}
+
 .message-bot th {
     background: rgba(255, 153, 51, 0.15);
-    padding: 6px 8px;
+    padding: 8px 10px;
     text-align: left;
     font-weight: 600;
     color: var(--primary);
@@ -331,9 +333,14 @@
 }
 
 .message-bot td {
-    padding: 5px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    min-width: 60px;
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.message-bot tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .message-bot hr {
