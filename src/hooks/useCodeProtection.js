@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 
 export const useCodeProtection = () => {
@@ -11,32 +10,34 @@ export const useCodeProtection = () => {
 
         // Disable common developer tool shortcuts
         const handleKeyDown = (e) => {
+            const key = e.key.toLowerCase();
+
             // F12
-            if (e.key === 'F12') {
+            if (key === 'f12') {
                 e.preventDefault();
                 return false;
             }
 
             // Ctrl+Shift+I / Cmd+Option+I (Inspect)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'i') {
+            if ((e.ctrlKey && e.shiftKey && key === 'i') || (e.metaKey && e.altKey && key === 'i')) {
                 e.preventDefault();
                 return false;
             }
 
             // Ctrl+Shift+J / Cmd+Option+J (Console)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'j') {
+            if ((e.ctrlKey && e.shiftKey && key === 'j') || (e.metaKey && e.altKey && key === 'j')) {
                 e.preventDefault();
                 return false;
             }
 
             // Ctrl+Shift+C / Cmd+Option+C (Inspect Element)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'c') {
+            if ((e.ctrlKey && e.shiftKey && key === 'c') || (e.metaKey && e.altKey && key === 'c')) {
                 e.preventDefault();
                 return false;
             }
 
             // Ctrl+U / Cmd+U (View Source)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+            if ((e.ctrlKey || e.metaKey) && key === 'u') {
                 e.preventDefault();
                 return false;
             }
@@ -47,6 +48,7 @@ export const useCodeProtection = () => {
         const threshold = 160;
 
         const detectDevTools = () => {
+            // Check if window is detached or DevTools is docked
             const widthThreshold = window.outerWidth - window.innerWidth > threshold;
             const heightThreshold = window.outerHeight - window.innerHeight > threshold;
 
@@ -55,6 +57,8 @@ export const useCodeProtection = () => {
                     devtoolsOpen = true;
                     // Clear localStorage sensitive data when DevTools detected
                     localStorage.removeItem('resumeData');
+                    // Aggressive block
+                    document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;color:white;font-family:sans-serif;text-align:center;"><h2>Developer tools are not allowed on this site.</h2><br/><p>Please close developer tools and refresh the page.</p></div>';
                 }
             } else {
                 devtoolsOpen = false;
@@ -62,15 +66,16 @@ export const useCodeProtection = () => {
         };
 
         // Override console methods in production
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'production' || import.meta.env.PROD) {
             const noop = () => { };
             window.console.log = noop;
             window.console.debug = noop;
             window.console.info = noop;
             window.console.warn = noop;
+            window.console.error = noop;
         }
 
-        // Detect debugger usage
+        // Detect debugger usage aggressively
         const checkDebugger = () => {
             const startTime = performance.now();
             debugger; // This will pause if DevTools is open
@@ -83,9 +88,9 @@ export const useCodeProtection = () => {
             }
         };
 
-        // Check periodically for DevTools
-        const devToolsInterval = setInterval(detectDevTools, 1000);
-        const debuggerInterval = setInterval(checkDebugger, 3000);
+        // Check aggressively for DevTools
+        const devToolsInterval = setInterval(detectDevTools, 500);
+        const debuggerInterval = setInterval(checkDebugger, 1000);
 
         // Disable text selection to make copying harder
         document.body.style.userSelect = 'none';
