@@ -23,99 +23,318 @@ const STOP_WORDS = new Set([
     'which', 'who', 'whom', 'how', 'when', 'where', 'why', 'all', 'each',
     'some', 'any', 'few', 'more', 'most', 'other', 'into', 'own', 'same',
     'up', 'out', 'also', 'get', 'got', 'need', 'want', 'please', 'tell',
-    'know', 'let', 'give', 'show', 'help', 'hi', 'hey', 'hello',
+    'know', 'let', 'give', 'show', 'help',
 ]);
 
-// ─── Intent Definitions ──────────────────────────────────────────────
+const NEGATION_WORDS = new Set([
+    'not', 'no', 'don\'t', 'dont', 'doesn\'t', 'doesnt', 'won\'t', 'wont',
+    'can\'t', 'cant', 'never', 'neither', 'without', 'stop', 'avoid',
+]);
+
+// ─── Synonym Dictionary ──────────────────────────────────────────────
+// Maps natural phrasing to canonical intent keywords
+const SYNONYMS = {
+    // course-related
+    'study': 'course', 'teach': 'course', 'tutorial': 'course', 'class': 'course',
+    'lesson': 'course', 'module': 'course', 'workshop': 'course', 'bootcamp': 'course',
+    'mooc': 'course', 'udemy': 'course', 'coursera': 'course', 'youtube': 'course',
+    'educate': 'course', 'education': 'course', 'instruction': 'course',
+    // skill-related
+    'expertise': 'skills', 'competency': 'skills', 'ability': 'skills',
+    'proficiency': 'skills', 'knowledge': 'skills', 'capable': 'skills',
+    'qualifications': 'skills', 'skillset': 'skills',
+    // project-related
+    'assignment': 'project', 'task': 'project', 'exercise': 'project',
+    'implementation': 'project', 'demo': 'project', 'prototype': 'project',
+    'work': 'project', 'app': 'project', 'application': 'project',
+    // career/job
+    'occupation': 'career', 'profession': 'career', 'field': 'career',
+    'industry': 'career', 'domain': 'career', 'sector': 'career',
+    'position': 'job', 'vacancy': 'job', 'opening': 'job', 'recruitment': 'job',
+    'placement': 'job', 'internship': 'job', 'opportunity': 'job',
+    // salary
+    'earn': 'salary', 'wage': 'salary', 'stipend': 'salary', 'remuneration': 'salary',
+    'paycheck': 'salary', 'revenue': 'salary',
+    // interview
+    'viva': 'interview', 'aptitude': 'interview', 'assessment': 'interview',
+    'exam': 'interview', 'test': 'interview',
+    // motivation
+    'depressed': 'frustrated', 'hopeless': 'frustrated', 'demotivated': 'unmotivated',
+    'tired': 'burnout', 'exhausted': 'burnout', 'stress': 'frustrated',
+    'doubt': 'confused', 'unsure': 'confused', 'uncertain': 'confused',
+    // roadmap
+    'pathway': 'roadmap', 'direction': 'roadmap', 'strategy': 'roadmap',
+    'blueprint': 'roadmap', 'curriculum': 'roadmap', 'syllabus': 'roadmap',
+};
+
+// ─── Fuzzy Matching (Damerau-Levenshtein Distance) ───────────────────
+// Handles insertions, deletions, substitutions, and adjacent transpositions
+const damerauLevenshtein = (a, b) => {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            const cost = b[i - 1] === a[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,       // deletion
+                matrix[i][j - 1] + 1,       // insertion
+                matrix[i - 1][j - 1] + cost  // substitution
+            );
+            // Transposition (swap of adjacent characters)
+            if (i > 1 && j > 1 && b[i - 1] === a[j - 2] && b[i - 2] === a[j - 1]) {
+                matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + cost);
+            }
+        }
+    }
+    return matrix[b.length][a.length];
+};
+
+const fuzzyMatch = (word, target) => {
+    if (word === target) return true;
+    if (word.length < 4 || target.length < 4) return false;
+    const maxDist = word.length >= 6 ? 2 : 1;
+    return damerauLevenshtein(word, target) <= maxDist;
+};
+
+// ─── N-gram Extraction ───────────────────────────────────────────────
+const extractNgrams = (tokens, n) => {
+    const ngrams = [];
+    for (let i = 0; i <= tokens.length - n; i++) {
+        ngrams.push(tokens.slice(i, i + n).join(' '));
+    }
+    return ngrams;
+};
+
+// ─── Intent Definitions (Enhanced) ───────────────────────────────────
 const INTENTS = [
     {
         name: 'greeting',
-        patterns: ['hello', 'hi', 'hey', 'good morning', 'good evening', 'howdy', 'greetings', 'sup', 'yo', 'namaste'],
+        patterns: ['hello', 'hi', 'hey', 'good morning', 'good evening', 'howdy', 'greetings', 'sup', 'yo', 'namaste', 'hola', 'whats up', 'good day'],
+        sentencePatterns: [/^(hi|hey|hello|yo|sup)\b/i],
         priority: 1,
     },
     {
         name: 'farewell',
-        patterns: ['bye', 'goodbye', 'see you', 'take care', 'later', 'cya', 'good night', 'thanks bye'],
+        patterns: ['bye', 'goodbye', 'see you', 'take care', 'later', 'cya', 'good night', 'thanks bye', 'gotta go', 'catch you later'],
+        sentencePatterns: [/\b(bye|goodbye|see you|gotta go)\b/i],
         priority: 1,
     },
     {
         name: 'thanks',
-        patterns: ['thanks', 'thank you', 'thx', 'appreciate', 'grateful', 'awesome thanks', 'great thanks'],
+        patterns: ['thanks', 'thank you', 'thx', 'appreciate', 'grateful', 'awesome thanks', 'great thanks', 'much appreciated', 'thanks a lot', 'thankyou'],
+        sentencePatterns: [/^(thanks|thank you|thx)\b/i],
         priority: 1,
     },
     {
         name: 'course_recommendation',
-        patterns: ['course', 'courses', 'recommend course', 'learn', 'learning path', 'study', 'tutorial', 'training', 'certification', 'where to learn', 'best course', 'free course', 'paid course', 'online course', 'how to learn', 'resources', 'material', 'study material', 'beginner course', 'advanced course'],
+        patterns: ['course', 'courses', 'recommend course', 'learn', 'learning path', 'study',
+            'tutorial', 'training', 'certification', 'where to learn', 'best course', 'free course',
+            'paid course', 'online course', 'how to learn', 'resources', 'material', 'study material',
+            'beginner course', 'advanced course', 'teach me', 'educate me', 'where can i study',
+            'what should i study', 'learning resources', 'suggest courses', 'recommend learning',
+            'i want to learn', 'help me learn', 'best resources', 'best tutorials', 'good courses',
+            'top courses', 'udemy', 'coursera', 'free resources'],
+        sentencePatterns: [
+            /\b(teach|educate)\s+me\b/i,
+            /\bwhere\s+(can|should|do)\s+i\s+(learn|study)\b/i,
+            /\bi\s+want\s+to\s+(learn|study)\b/i,
+            /\b(suggest|recommend)\s+(some\s+)?courses?\b/i,
+            /\bwhat\s+(should|can)\s+i\s+(learn|study)\b/i,
+            /\bhow\s+(to|can\s+i)\s+learn\b/i,
+            /\bbest\s+(way|resources?)\s+to\s+learn\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'skill_inquiry',
-        patterns: ['skills', 'what skills', 'skill needed', 'required skills', 'skill gap', 'technical skills', 'soft skills', 'tools needed', 'what should i learn', 'prerequisites', 'requirements'],
+        patterns: ['skills', 'what skills', 'skill needed', 'required skills', 'skill gap',
+            'technical skills', 'soft skills', 'tools needed', 'what should i learn',
+            'prerequisites', 'requirements', 'skill set', 'competencies', 'abilities',
+            'what do i need to know', 'knowledge required', 'qualifications needed',
+            'must know', 'essential skills'],
+        sentencePatterns: [
+            /\bwhat\s+(skills?|do\s+i\s+need)\b/i,
+            /\b(skills?|knowledge|prerequisites?)\s+(needed|required|for)\b/i,
+            /\bwhat\s+(should|do|must)\s+i\s+(know|learn|have)\b/i,
+            /\bwhat\s+are\s+the\s+(required|essential|important)\s+skills?\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'project_suggestion',
-        patterns: ['project', 'projects', 'project ideas', 'portfolio', 'build', 'create', 'hands on', 'practical', 'practice project', 'side project', 'beginner project', 'advanced project'],
+        patterns: ['project', 'projects', 'project ideas', 'portfolio', 'build', 'create',
+            'hands on', 'practical', 'practice project', 'side project', 'beginner project',
+            'advanced project', 'what can i build', 'what to build', 'build something',
+            'make something', 'project suggestions', 'portfolio ideas', 'capstone',
+            'mini project', 'real world project', 'weekend project'],
+        sentencePatterns: [
+            /\bwhat\s+(can|should)\s+i\s+build\b/i,
+            /\b(suggest|recommend)\s+(some\s+)?projects?\b/i,
+            /\b(give|show)\s+me\s+(some\s+)?project\s+ideas?\b/i,
+            /\bproject\s+(ideas?|suggestions?)\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'career_info',
-        patterns: ['career', 'career path', 'job', 'role', 'profession', 'what does', 'salary', 'job market', 'demand', 'future', 'scope', 'opportunities', 'career options', 'career change', 'switch career'],
+        patterns: ['career', 'career path', 'role', 'profession', 'what does', 'job market',
+            'demand', 'future', 'scope', 'opportunities', 'career options', 'career change',
+            'switch career', 'career advice', 'career guidance', 'about the role',
+            'day in the life', 'responsibilities', 'what is a'],
+        sentencePatterns: [
+            /\bwhat\s+(does\s+a|is\s+a|is\s+the\s+role)\b/i,
+            /\btell\s+me\s+about\s+(the\s+)?(career|role|job|profession)\b/i,
+            /\b(career|job|role)\s+(advice|guidance|info|information)\b/i,
+        ],
         priority: 2,
     },
     {
         name: 'interview_prep',
-        patterns: ['interview', 'interview question', 'practice', 'mock', 'quiz', 'prepare', 'preparation', 'interview tips', 'common questions'],
+        patterns: ['interview', 'interview question', 'practice', 'mock', 'quiz', 'prepare',
+            'preparation', 'interview tips', 'common questions', 'practice questions',
+            'mock interview', 'interview practice', 'viva', 'aptitude', 'assessment',
+            'test questions', 'crack interview', 'ace interview'],
+        sentencePatterns: [
+            /\b(prepare|practice)\s+(for\s+)?(the\s+)?interview\b/i,
+            /\binterview\s+(questions?|tips?|prep|practice)\b/i,
+            /\b(help\s+me\s+)?(crack|ace|pass)\s+(the\s+)?interview\b/i,
+            /\bask\s+me\s+(some\s+)?questions?\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'comparison',
-        patterns: ['difference', 'compare', 'vs', 'versus', 'better', 'which one', 'or', 'comparison', 'pros and cons', 'advantages'],
+        patterns: ['difference', 'compare', 'vs', 'versus', 'better', 'which one',
+            'comparison', 'pros and cons', 'advantages', 'disadvantages', 'which is better',
+            'should i choose', 'better option', 'compare careers'],
+        sentencePatterns: [
+            /\b(\w+)\s+(vs|versus|or|compared\s+to)\s+(\w+)\b/i,
+            /\bwhich\s+(is|one\s+is)\s+better\b/i,
+            /\b(difference|compare|pros\s+and\s+cons)\s+between\b/i,
+            /\bshould\s+i\s+(choose|pick|go\s+with|select)\b/i,
+        ],
         priority: 2,
     },
     {
         name: 'motivation',
-        patterns: ['motivate', 'inspiration', 'stuck', 'frustrated', 'confused', 'lost', 'overwhelmed', 'scared', 'nervous', 'anxious', 'worried', 'unmotivated', 'burnout', 'imposter', 'fail', 'failure', 'give up', 'difficulty', 'hard'],
+        patterns: ['motivate', 'motivation', 'inspiration', 'stuck', 'frustrated', 'confused',
+            'lost', 'overwhelmed', 'scared', 'nervous', 'anxious', 'worried', 'unmotivated',
+            'burnout', 'imposter', 'fail', 'failure', 'give up', 'difficulty', 'hard',
+            'depressed', 'hopeless', 'demotivated', 'stressed', 'doubt', 'struggling',
+            'i can\'t', 'too difficult', 'not good enough', 'feeling down'],
+        sentencePatterns: [
+            /\bi\s+(feel|am)\s+(lost|stuck|confused|overwhelmed|frustrated|scared|anxious)\b/i,
+            /\bi\s+(can't|cant|cannot)\s+(do|learn|understand)\b/i,
+            /\b(feeling|i'm)\s+(down|hopeless|frustrated|demotivated|unmotivated)\b/i,
+            /\bis\s+it\s+too\s+(late|hard|difficult)\b/i,
+            /\bshould\s+i\s+give\s+up\b/i,
+        ],
         priority: 2,
     },
     {
         name: 'about_bot',
-        patterns: ['who are you', 'what can you do', 'what are you', 'your name', 'about you', 'capabilities', 'features', 'how do you work'],
+        patterns: ['who are you', 'what can you do', 'what are you', 'your name', 'about you',
+            'capabilities', 'features', 'how do you work', 'what is skillgps', 'what do you do',
+            'tell me about yourself', 'your features', 'how can you help'],
+        sentencePatterns: [
+            /\bwho\s+are\s+you\b/i,
+            /\bwhat\s+(can\s+you|do\s+you)\s+do\b/i,
+            /\btell\s+me\s+about\s+(yourself|you|this\s+bot)\b/i,
+        ],
         priority: 1,
     },
     {
         name: 'roadmap',
-        patterns: ['roadmap', 'path', 'plan', 'journey', 'timeline', 'step by step', 'how to become', 'guide', 'how to start', 'where to start', 'getting started', 'beginner', 'start from scratch'],
+        patterns: ['roadmap', 'path', 'plan', 'journey', 'timeline', 'step by step',
+            'how to become', 'guide', 'how to start', 'where to start', 'getting started',
+            'start from scratch', 'career roadmap', 'learning roadmap', 'development path',
+            'career plan', 'growth path', 'what steps', 'phases', 'stages', 'milestones',
+            'pathway', 'blueprint', 'curriculum', 'syllabus'],
+        sentencePatterns: [
+            /\bhow\s+(to|do\s+i)\s+(become|start|begin|get\s+into)\b/i,
+            /\bwhere\s+(should|do|can)\s+i\s+start\b/i,
+            /\b(give|show|create)\s+(me\s+)?(a\s+)?(roadmap|plan|path|guide)\b/i,
+            /\bstep\s+by\s+step\s+(guide|plan|path)\b/i,
+            /\bhow\s+(can|do)\s+i\s+get\s+(into|started)\b/i,
+            /\bwhat\s+(are\s+the\s+)?steps\s+to\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'salary_info',
-        patterns: ['salary', 'pay', 'compensation', 'earning', 'income', 'how much', 'ctc', 'package', 'money'],
+        patterns: ['salary', 'pay', 'compensation', 'earning', 'income', 'how much', 'ctc',
+            'package', 'money', 'wage', 'stipend', 'remuneration', 'average salary',
+            'salary range', 'expected salary', 'how much earn', 'pay scale', 'lpa', 'per annum'],
+        sentencePatterns: [
+            /\bhow\s+much\s+(does|do|can|will)\s+\w+\s+(earn|make|get\s+paid)\b/i,
+            /\bwhat\s+(is|are)\s+the\s+(salary|pay|compensation|ctc|package)\b/i,
+            /\b(salary|earning|income|pay)\s+(range|expectation|of|for)\b/i,
+        ],
         priority: 2,
     },
     {
         name: 'tool_inquiry',
-        patterns: ['tool', 'tools', 'software', 'ide', 'editor', 'platform', 'framework', 'library', 'technology', 'tech stack'],
+        patterns: ['tool', 'tools', 'software', 'ide', 'editor', 'platform', 'framework',
+            'library', 'technology', 'tech stack', 'what tools', 'which software',
+            'development tools', 'programming tools', 'best tools', 'tools used',
+            'technologies used', 'setup', 'environment'],
+        sentencePatterns: [
+            /\bwhat\s+tools?\s+(do|does|should|are)\b/i,
+            /\bwhich\s+(tools?|software|framework|technology)\b/i,
+            /\b(tools?|software|tech\s+stack)\s+(for|used|needed)\b/i,
+        ],
         priority: 2,
     },
     {
         name: 'github_analysis',
-        patterns: ['github', 'analyze github', 'github profile', 'github portfolio', 'my repos', 'my repositories', 'analyze my github', 'github url', 'github username'],
+        patterns: ['github', 'analyze github', 'github profile', 'github portfolio',
+            'my repos', 'my repositories', 'analyze my github', 'github url',
+            'github username', 'check my github', 'review my github', 'scan my repos',
+            'git profile', 'repository analysis'],
+        sentencePatterns: [
+            /\b(analyze|check|review|scan)\s+(my\s+)?github\b/i,
+            /\bgithub\s+(profile|portfolio|analysis|repos)\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'linkedin_import',
-        patterns: ['linkedin', 'linkedin profile', 'import linkedin', 'linkedin data', 'linkedin skills', 'linkedin import'],
+        patterns: ['linkedin', 'linkedin profile', 'import linkedin', 'linkedin data',
+            'linkedin skills', 'linkedin import', 'analyze linkedin', 'my linkedin',
+            'linkedin resume', 'parse linkedin'],
+        sentencePatterns: [
+            /\b(import|analyze|parse|check)\s+(my\s+)?linkedin\b/i,
+            /\blinkedin\s+(profile|import|data|skills)\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'calendar_schedule',
-        patterns: ['schedule', 'calendar', 'study plan', 'study schedule', 'google calendar', 'ics', 'plan my study', 'create schedule', 'time table', 'timetable', 'weekly plan'],
+        patterns: ['schedule', 'calendar', 'study plan', 'study schedule', 'google calendar',
+            'ics', 'plan my study', 'create schedule', 'time table', 'timetable',
+            'weekly plan', 'daily plan', 'monthly plan', 'make a schedule',
+            'organize my study', 'plan my week', 'routine', 'create a plan'],
+        sentencePatterns: [
+            /\b(create|make|plan|build|generate)\s+(a\s+)?(study\s+)?(schedule|plan|timetable|routine)\b/i,
+            /\b(schedule|plan)\s+(my\s+)?(study|learning|week)\b/i,
+            /\badd\s+to\s+(google\s+)?calendar\b/i,
+        ],
         priority: 3,
     },
     {
         name: 'job_search',
-        patterns: ['job', 'jobs', 'job listing', 'job search', 'find jobs', 'openings', 'vacancies', 'hiring', 'apply', 'job portal', 'naukri', 'indeed', 'glassdoor', 'job board'],
+        patterns: ['job', 'jobs', 'job listing', 'job search', 'find jobs', 'openings',
+            'vacancies', 'hiring', 'apply', 'job portal', 'naukri', 'indeed', 'glassdoor',
+            'job board', 'job opportunities', 'find work', 'job hunt', 'looking for job',
+            'career opportunities', 'employment', 'where to apply', 'job sites'],
+        sentencePatterns: [
+            /\b(find|search|look\s+for|show)\s+(me\s+)?(jobs?|openings?|vacancies|work)\b/i,
+            /\bwhere\s+(can|should|do)\s+i\s+(apply|find\s+jobs?|look\s+for\s+jobs?)\b/i,
+            /\b(job|jobs)\s+(for|in|related\s+to|listing|search)\b/i,
+        ],
         priority: 3,
     },
 ];
@@ -124,13 +343,24 @@ const INTENTS = [
 const tokenize = (text) => {
     return text
         .toLowerCase()
-        .replace(/[^a-z0-9\s/]/g, ' ')
+        .replace(/[^a-z0-9\s/'-]/g, ' ')
         .split(/\s+/)
         .filter(Boolean);
 };
 
 const tokenizeClean = (text) => {
     return tokenize(text).filter(t => !STOP_WORDS.has(t));
+};
+
+// ─── Synonym Expansion ──────────────────────────────────────────────
+const expandWithSynonyms = (tokens) => {
+    const expanded = [...tokens];
+    tokens.forEach(token => {
+        if (SYNONYMS[token] && !expanded.includes(SYNONYMS[token])) {
+            expanded.push(SYNONYMS[token]);
+        }
+    });
+    return expanded;
 };
 
 // ─── Entity Extraction ──────────────────────────────────────────────
@@ -144,12 +374,22 @@ const DOMAIN_ALIASES = {
     'artificial intelligence': 'AI/ML Engineer',
     'ai/ml': 'AI/ML Engineer',
     'ai ml': 'AI/ML Engineer',
+    'deep learning': 'AI/ML Engineer',
+    'neural network': 'AI/ML Engineer',
+    'nlp': 'AI/ML Engineer',
+    'computer vision': 'AI/ML Engineer',
     'backend': 'Backend Developer',
     'back end': 'Backend Developer',
     'back-end': 'Backend Developer',
     'backend developer': 'Backend Developer',
     'backend dev': 'Backend Developer',
     'server side': 'Backend Developer',
+    'node': 'Backend Developer',
+    'nodejs': 'Backend Developer',
+    'django': 'Backend Developer',
+    'spring': 'Backend Developer',
+    'express': 'Backend Developer',
+    'api development': 'Backend Developer',
     'frontend': 'Frontend Developer',
     'front end': 'Frontend Developer',
     'front-end': 'Frontend Developer',
@@ -157,78 +397,258 @@ const DOMAIN_ALIASES = {
     'frontend dev': 'Frontend Developer',
     'web developer': 'Frontend Developer',
     'web dev': 'Frontend Developer',
+    'react': 'Frontend Developer',
+    'angular': 'Frontend Developer',
+    'vue': 'Frontend Developer',
+    'html css': 'Frontend Developer',
+    'web design': 'Frontend Developer',
     'ui ux': 'UI/UX Designer',
     'ui/ux': 'UI/UX Designer',
     'ux': 'UI/UX Designer',
     'ui': 'UI/UX Designer',
     'designer': 'UI/UX Designer',
     'ux designer': 'UI/UX Designer',
+    'user experience': 'UI/UX Designer',
+    'user interface': 'UI/UX Designer',
+    'figma': 'UI/UX Designer',
     'product manager': 'Product Manager',
     'pm': 'Product Manager',
     'product management': 'Product Manager',
+    'product owner': 'Product Manager',
     'cybersecurity': 'Cybersecurity Analyst',
     'cyber security': 'Cybersecurity Analyst',
     'security': 'Cybersecurity Analyst',
     'infosec': 'Cybersecurity Analyst',
+    'ethical hacking': 'Cybersecurity Analyst',
+    'penetration testing': 'Cybersecurity Analyst',
     'cloud': 'Cloud Engineer',
     'cloud engineer': 'Cloud Engineer',
     'cloud computing': 'Cloud Engineer',
     'devops': 'Cloud Engineer',
+    'aws': 'Cloud Engineer',
+    'azure': 'Cloud Engineer',
+    'gcp': 'Cloud Engineer',
+    'docker': 'Cloud Engineer',
+    'kubernetes': 'Cloud Engineer',
     'business analyst': 'Business Analyst',
     'ba': 'Business Analyst',
     'business analysis': 'Business Analyst',
+    'business intelligence': 'Business Analyst',
     'data analyst': 'Data Analyst',
     'data analysis': 'Data Analyst',
     'analytics': 'Data Analyst',
+    'excel analysis': 'Data Analyst',
+    'tableau': 'Data Analyst',
+    'power bi': 'Data Analyst',
+    'python': 'Data Scientist',
+    'java': 'Backend Developer',
+    'javascript': 'Frontend Developer',
+    'sql': 'Data Analyst',
 };
 
 const extractDomain = (text) => {
     const lower = text.toLowerCase();
-    // Check multi-word aliases first (longest match)
     const sorted = Object.entries(DOMAIN_ALIASES).sort((a, b) => b[0].length - a[0].length);
+
+    // 1. Check multi-word and long aliases first (exact substring, longest match wins)
     for (const [alias, domain] of sorted) {
-        if (lower.includes(alias)) return domain;
+        if (alias.length > 3 && lower.includes(alias)) return domain;
     }
-    // Fallback: check DOMAINS list
+
+    // 2. Fuzzy match against aliases (catches typos like "backedn" → "backend")
+    const tokens = tokenize(lower);
+    for (const token of tokens) {
+        for (const [alias, domain] of sorted) {
+            if (alias.split(' ').length === 1 && alias.length >= 4 && fuzzyMatch(token, alias)) {
+                return domain;
+            }
+        }
+    }
+
+    // 3. Fallback: check DOMAINS list
     for (const d of DOMAINS) {
         if (lower.includes(d.toLowerCase())) return d;
     }
+
+    // 4. Short aliases (ba, pm, ds, ai, etc.) — require word boundaries
+    for (const [alias, domain] of sorted) {
+        if (alias.length <= 3) {
+            const regex = new RegExp(`\\b${alias}\\b`, 'i');
+            if (regex.test(lower)) return domain;
+        }
+    }
+
     return null;
 };
 
 const extractLevel = (text) => {
     const lower = text.toLowerCase();
-    if (/\b(beginner|basics?|start|entry|junior|newbie|freshman|novice)\b/.test(lower)) return 'beginner';
-    if (/\b(intermediate|mid|middle|some experience)\b/.test(lower)) return 'intermediate';
-    if (/\b(advanced|senior|expert|experienced|pro|master)\b/.test(lower)) return 'advanced';
+    if (/\b(beginner|basics?|start|entry|junior|newbie|freshman|novice|introduct|elementary|foundation)\b/.test(lower)) return 'beginner';
+    if (/\b(intermediate|mid|middle|some experience|moderate)\b/.test(lower)) return 'intermediate';
+    if (/\b(advanced|senior|expert|experienced|pro|master|deep dive|in.?depth)\b/.test(lower)) return 'advanced';
     return null;
 };
 
-// ─── Intent Classification ──────────────────────────────────────────
+// ─── Negation Detection ─────────────────────────────────────────────
+const detectNegations = (text) => {
+    const lower = text.toLowerCase();
+    const negated = new Set();
+    const tokens = tokenize(lower);
+
+    for (let i = 0; i < tokens.length; i++) {
+        if (NEGATION_WORDS.has(tokens[i])) {
+            // Mark the next 3 tokens as negated
+            for (let j = i + 1; j < Math.min(i + 4, tokens.length); j++) {
+                negated.add(tokens[j]);
+            }
+        }
+    }
+    return negated;
+};
+
+// ─── Conversation Context ───────────────────────────────────────────
+const conversationContext = {
+    lastDomain: null,
+    lastIntent: null,
+    lastMessages: [],
+    turnCount: 0,
+};
+
+export const updateContext = (domain, intent) => {
+    if (domain) conversationContext.lastDomain = domain;
+    if (intent && intent !== 'general' && intent !== 'greeting') {
+        conversationContext.lastIntent = intent;
+    }
+    conversationContext.turnCount++;
+};
+
+export const getContext = () => ({ ...conversationContext });
+
+export const resetContext = () => {
+    conversationContext.lastDomain = null;
+    conversationContext.lastIntent = null;
+    conversationContext.lastMessages = [];
+    conversationContext.turnCount = 0;
+};
+
+// ─── Context-Aware Follow-up Detection ──────────────────────────────
+const FOLLOW_UP_PATTERNS = [
+    { regex: /\b(and|also|what about|how about)\s+(projects?|portfolio)\b/i, intent: 'project_suggestion' },
+    { regex: /\b(and|also|what about|how about)\s+(courses?|learning|study)\b/i, intent: 'course_recommendation' },
+    { regex: /\b(and|also|what about|how about)\s+(skills?|requirements?)\b/i, intent: 'skill_inquiry' },
+    { regex: /\b(and|also|what about|how about)\s+(salary|pay|earning|money|income)\b/i, intent: 'salary_info' },
+    { regex: /\b(and|also|what about|how about)\s+(jobs?|openings?|hiring)\b/i, intent: 'job_search' },
+    { regex: /\b(and|also|what about|how about)\s+(tools?|software|tech)\b/i, intent: 'tool_inquiry' },
+    { regex: /\b(and|also|what about|how about)\s+(interview|prep|practice)\b/i, intent: 'interview_prep' },
+    { regex: /\b(and|also|what about|how about)\s+(roadmap|plan|path)\b/i, intent: 'roadmap' },
+    { regex: /\bwhat\s+else\b/i, intent: null },  // use last intent
+    { regex: /\b(tell\s+me\s+)?more\b/i, intent: null },
+    { regex: /\byes\b/i, intent: null },
+    { regex: /\bsure\b/i, intent: null },
+    { regex: /\bok\b/i, intent: null },
+];
+
+const detectFollowUp = (text) => {
+    const lower = text.toLowerCase().trim();
+    // Very short messages are likely follow-ups
+    const isShort = lower.split(/\s+/).length <= 4;
+
+    for (const pattern of FOLLOW_UP_PATTERNS) {
+        if (pattern.regex.test(lower)) {
+            return {
+                isFollowUp: true,
+                intent: pattern.intent || conversationContext.lastIntent,
+                domain: conversationContext.lastDomain,
+            };
+        }
+    }
+
+    // Short message with only a domain name = follow-up
+    if (isShort) {
+        const domainOnly = extractDomain(lower);
+        if (domainOnly && lower.replace(/[^a-z\s/]/g, '').trim().length < 25) {
+            return {
+                isFollowUp: true,
+                intent: conversationContext.lastIntent || 'roadmap',
+                domain: domainOnly,
+            };
+        }
+    }
+
+    return { isFollowUp: false };
+};
+
+// ─── Intent Classification (Enhanced NLP) ────────────────────────────
 const classifyIntent = (text) => {
     const lower = text.toLowerCase();
-    const tokens = tokenize(lower);
+    const rawTokens = tokenize(lower);
+    const tokens = expandWithSynonyms(rawTokens);
+    const bigrams = extractNgrams(rawTokens, 2);
+    const trigrams = extractNgrams(rawTokens, 3);
+    const negated = detectNegations(lower);
+
+    // 1. Check follow-up context first
+    const followUp = detectFollowUp(text);
+    if (followUp.isFollowUp && followUp.intent) {
+        return { intent: followUp.intent, confidence: 0.75, followUp: true };
+    }
 
     let bestIntent = null;
     let bestScore = 0;
 
     for (const intent of INTENTS) {
         let score = 0;
-        for (const pattern of intent.patterns) {
-            const patternTokens = pattern.split(' ');
-            if (patternTokens.length > 1) {
-                // Multi-word pattern: check if the phrase exists in text
-                if (lower.includes(pattern)) {
-                    score += pattern.length * 2;
-                }
-            } else {
-                // Single word: check token match
-                if (tokens.includes(pattern)) {
-                    score += pattern.length;
+        let matchCount = 0;
+
+        // A. Sentence pattern matching (highest weight)
+        if (intent.sentencePatterns) {
+            for (const regex of intent.sentencePatterns) {
+                if (regex.test(lower)) {
+                    score += 15;
+                    matchCount++;
                 }
             }
         }
-        // Weighted by priority
+
+        // B. Exact phrase matching (multi-word patterns)
+        for (const pattern of intent.patterns) {
+            const patternTokens = pattern.split(' ');
+
+            if (patternTokens.length > 2) {
+                // Trigram: check in trigrams
+                if (trigrams.includes(pattern) || lower.includes(pattern)) {
+                    score += pattern.length * 3;
+                    matchCount++;
+                }
+            } else if (patternTokens.length === 2) {
+                // Bigram: check in bigrams or lower
+                if (bigrams.includes(pattern) || lower.includes(pattern)) {
+                    score += pattern.length * 2.5;
+                    matchCount++;
+                }
+            } else {
+                // Single word: exact match
+                if (tokens.includes(pattern)) {
+                    // Penalize if the keyword is negated
+                    if (negated.has(pattern)) {
+                        score -= pattern.length;
+                    } else {
+                        score += pattern.length;
+                        matchCount++;
+                    }
+                }
+                // Fuzzy match (typo tolerance)
+                else if (rawTokens.some(t => fuzzyMatch(t, pattern))) {
+                    score += pattern.length * 0.7;
+                    matchCount++;
+                }
+            }
+        }
+
+        // C. Multi-match bonus (more pattern hits = more confident)
+        if (matchCount > 1) score *= (1 + matchCount * 0.15);
+
+        // D. Priority weighting
         score *= intent.priority;
 
         if (score > bestScore) {
@@ -237,7 +657,14 @@ const classifyIntent = (text) => {
         }
     }
 
-    return bestScore > 0 ? bestIntent : 'general';
+    // Calculate confidence (0-1 scale)
+    const confidence = Math.min(1, bestScore / 30);
+
+    if (bestScore > 0 && confidence >= 0.15) {
+        return { intent: bestIntent, confidence, followUp: false };
+    }
+
+    return { intent: 'general', confidence: 0, followUp: false };
 };
 
 // ─── Response Generators ─────────────────────────────────────────────
@@ -851,8 +1278,16 @@ const generalResponses = [
 // ─── Main Brain Function ─────────────────────────────────────────────
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+// Low-confidence clarification responses
+const clarificationResponses = [
+    "I'm not 100% sure what you're looking for. Could you rephrase? 🤔\n\nFor example:\n• *\"Recommend courses for Data Science\"*\n• *\"What skills do I need for Backend?\"*\n• *\"How to become an AI Engineer\"*",
+    "Hmm, I want to make sure I help you correctly! 🎯\n\nCould you try asking in a different way? Here are some examples:\n• *\"Show me a roadmap for Frontend\"*\n• *\"Find jobs for Cloud Engineer\"*\n• *\"Project ideas for Cybersecurity\"*",
+];
+
 /**
  * Process a user message and return a bot response.
+ * Uses enhanced NLP with fuzzy matching, synonyms, n-grams, negation,
+ * and conversation context for intelligent intent classification.
  * @param {string} userMessage - The user's input text
  * @param {Object} context - Optional context (resumeData, conversationHistory, etc.)
  * @returns {string} The bot's response in markdown format
@@ -861,12 +1296,22 @@ export const processMessage = (userMessage, context = {}) => {
     const text = userMessage.trim();
     if (!text) return "I didn't get that. Could you say something? 😊";
 
-    const intent = classifyIntent(text);
+    // Run the enhanced NLP pipeline
+    const classification = classifyIntent(text);
+    const { intent, confidence, followUp } = classification;
+
     const domain = extractDomain(text);
     const level = extractLevel(text);
 
-    // Use stored domain from context if not found in message
-    const effectiveDomain = domain || context.lastDomain || null;
+    // Use follow-up domain, context domain, or extracted domain
+    const effectiveDomain = domain
+        || (followUp ? conversationContext.lastDomain : null)
+        || context.lastDomain
+        || conversationContext.lastDomain
+        || null;
+
+    // Update conversation context for future turns
+    updateContext(effectiveDomain, intent);
 
     switch (intent) {
         case 'greeting':
@@ -953,6 +1398,10 @@ export const processMessage = (userMessage, context = {}) => {
             // Try to give a domain-specific general response if domain is detected
             if (effectiveDomain) {
                 return generateCareerInfoResponse(effectiveDomain);
+            }
+            // Low-confidence: ask for clarification instead of a generic miss
+            if (confidence > 0 && confidence < 0.15) {
+                return pickRandom(clarificationResponses);
             }
             return pickRandom(generalResponses);
     }

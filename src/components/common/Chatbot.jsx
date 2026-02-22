@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { processMessage, getDomainFromMessage, analyzeGitHubRepos, formatGitHubAnalysis, generateICSFile, extractDomain } from '../../services/chatbotBrain';
+import { processMessage, getDomainFromMessage, analyzeGitHubRepos, formatGitHubAnalysis, generateICSFile, extractDomain, resetContext } from '../../services/chatbotBrain';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageCircle, X, Send, Sparkles, Cpu,
@@ -239,6 +239,7 @@ const Chatbot = () => {
         setIsTyping(false);
         setResumeText('');
         setLastDomain(null);
+        resetContext(); // Clear NLP conversation memory
     };
 
     const addBotMessage = (text) => {
