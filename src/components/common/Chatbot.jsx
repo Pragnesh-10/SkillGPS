@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageCircle, X, Send, Sparkles, Cpu,
     RefreshCw, Mic, MicOff, Volume2, VolumeX, FileUp,
-    Github, Calendar, Briefcase, Linkedin
+    Github, Calendar, Briefcase, Linkedin, Download
 } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
@@ -654,6 +654,67 @@ const Chatbot = () => {
         if (e.key === 'Enter') handleSendMessage();
     };
 
+    // ─── Chat Export ─────────────────────────────────────────────
+    const exportChat = () => {
+        if (messages.length === 0) return;
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+        const messagesHtml = messages.map(m => {
+            const rendered = renderMarkdown(m.text);
+            const isUser = m.sender === 'user';
+            return `
+                <div style="display:flex;gap:12px;align-items:flex-start;margin:12px 0;${isUser ? 'flex-direction:row-reverse;' : ''}">
+                    <div style="min-width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;
+                        background:${isUser ? 'linear-gradient(135deg,#FF9933,#e88a2e)' : 'linear-gradient(135deg,rgba(255,153,51,0.15),rgba(19,136,8,0.15))'};">
+                        ${isUser ? '👤' : '🤖'}
+                    </div>
+                    <div style="max-width:80%;padding:12px 16px;border-radius:16px;line-height:1.7;font-size:14px;
+                        ${isUser ? 'background:#FF9933;color:white;border-bottom-right-radius:4px;' :
+                    'background:#f8f9fa;color:#1a1a2e;border:1px solid #e9ecef;border-bottom-left-radius:4px;'}">
+                        ${rendered}
+                    </div>
+                </div>`;
+        }).join('');
+
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>SkillGPS Chat — ${dateStr}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#fff;color:#1a1a2e;padding:40px;max-width:800px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px}
+  .meta{color:#666;font-size:13px;margin-bottom:24px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th{background:#f0f0f0;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid #ddd}
+  td{padding:6px 10px;border-bottom:1px solid #eee}
+  h2,h3{color:#FF9933;margin:10px 0 6px;font-size:16px}
+  strong{color:#c97a20}
+  code{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-size:12px}
+  a{color:#FF9933}
+  blockquote{border-left:3px solid #FF9933;padding-left:12px;color:#666;margin:8px 0}
+  hr{border:none;border-top:1px solid #eee;margin:16px 0}
+  ul,ol{padding-left:20px;margin:6px 0}
+  .footer{text-align:center;margin-top:40px;color:#999;font-size:12px;border-top:1px solid #eee;padding-top:16px}
+</style></head><body>
+<h1>🧭 SkillGPS — Chat Export</h1>
+<div class="meta">Exported on ${dateStr} at ${timeStr}</div>
+${messagesHtml}
+<div class="footer">Exported from SkillGPS AI Navigator — skillgps.vercel.app</div>
+</body></html>`;
+
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `SkillGPS_Chat_${now.toISOString().slice(0, 10)}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     // ─── Welcome Suggestions ────────────────────────────────────
     const welcomeSuggestions = useMemo(() => [
         { icon: '🗺️', text: 'How to become a Data Scientist?' },
@@ -697,6 +758,9 @@ const Chatbot = () => {
                                 </button>
                                 <button onClick={() => resumeInputRef.current?.click()} className="chatbot-close-btn" title="Upload Resume">
                                     <FileUp size={16} />
+                                </button>
+                                <button onClick={exportChat} className="chatbot-close-btn" title="Export Chat" disabled={messages.length === 0}>
+                                    <Download size={16} />
                                 </button>
                                 <button onClick={resetChat} className="chatbot-close-btn" title="New Chat">
                                     <RefreshCw size={16} />

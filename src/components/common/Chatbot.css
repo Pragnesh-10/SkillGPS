@@ -149,11 +149,22 @@
     color: var(--text-main);
 }
 
+.chatbot-close-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.chatbot-close-btn:disabled:hover {
+    background: transparent;
+    color: var(--text-muted);
+}
+
 /* ─── Messages Area ───────────────────────────────────────────── */
 .chatbot-messages {
     flex: 1;
     padding: 16px 16px 8px;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -221,6 +232,8 @@
     line-height: 1.6;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .message-bot {
@@ -292,6 +305,19 @@
     border-collapse: collapse;
     margin: 8px 0;
     font-size: 0.8rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.message-bot table::-webkit-scrollbar {
+    height: 3px;
+}
+
+.message-bot table::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
 }
 
 .message-bot th {
@@ -301,11 +327,13 @@
     font-weight: 600;
     color: var(--primary);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
 }
 
 .message-bot td {
     padding: 5px 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    min-width: 60px;
 }
 
 .message-bot hr {
@@ -658,6 +686,15 @@
 
     .welcome-suggestions {
         max-width: 100%;
+    }
+
+    .message-bot table {
+        font-size: 0.72rem;
+    }
+
+    .message-bot th,
+    .message-bot td {
+        padding: 4px 6px;
     }
 }
 
