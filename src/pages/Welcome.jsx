@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import BackgroundGlow from '../components/common/BackgroundGlow';
+import { ArrowRight, Zap } from 'lucide-react';
 import SurveyChoiceModal from '../components/common/SurveyChoiceModal';
 import './Welcome.css';
 
@@ -17,23 +16,23 @@ const Welcome = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
+        staggerChildren: 0.18,
+        delayChildren: 0.1
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
   };
 
   return (
-    <div className="container welcome-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', justifyContent: 'space-between' }}>
+    <div className="welcome-container">
+      {/* Third accent orb */}
+      <div className="welcome-orb-accent" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        {/* Background Glow */}
-        <BackgroundGlow />
-
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
         <motion.div
           className="welcome-content"
           variants={containerVariants}
@@ -41,7 +40,7 @@ const Welcome = () => {
           animate="visible"
         >
           <motion.div className="welcome-badge" variants={itemVariants}>
-            <Sparkles size={16} color="#ffffff" />
+            <Zap size={14} color="var(--secondary-light)" />
             <span className="welcome-badge-text">AI-Powered Career Guidance</span>
           </motion.div>
 
@@ -51,14 +50,14 @@ const Welcome = () => {
           </motion.h1>
 
           <motion.p className="welcome-description" variants={itemVariants}>
-            Stop guessing your future. Let our AI analyze your skills, interests, and personality to build a personalized career roadmap for you.
+            Stop guessing your future. Let our AI analyze your skills, interests, and personality to build a personalized career roadmap.
           </motion.p>
 
           <motion.button
             className="btn-primary welcome-cta"
             onClick={() => setShowChoiceModal(true)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             variants={itemVariants}
           >
             Start Your Journey <ArrowRight size={20} />
@@ -68,12 +67,11 @@ const Welcome = () => {
 
       <VisitorCounter />
 
-      {/* Survey Choice Modal */}
       <SurveyChoiceModal
         isOpen={showChoiceModal}
         onClose={() => setShowChoiceModal(false)}
       />
-    </div >
+    </div>
   );
 };
 

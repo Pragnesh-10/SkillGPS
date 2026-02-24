@@ -5,6 +5,7 @@ import WorkStyleStep from '../components/survey/WorkStyleStep';
 import IntentStep from '../components/survey/IntentStep';
 import ConfidenceStep from '../components/survey/ConfidenceStep';
 import { useNavigate } from 'react-router-dom';
+import './Survey.css';
 
 const Survey = () => {
     const navigate = useNavigate();
@@ -20,21 +21,18 @@ const Survey = () => {
         switch (step) {
             case 1:
                 const { numbers, building, design, explaining, logic } = formData.interests || {};
-                // Check if all Interest fields have a boolean value (true or false, not undefined)
                 if (numbers === undefined || building === undefined || design === undefined || explaining === undefined || logic === undefined) {
                     return false;
                 }
                 return true;
             case 2:
                 const { environment, structure, roleType } = formData.workStyle || {};
-                // Check if all Work Style fields are selected (truthy strings)
                 if (!environment || !structure || !roleType) {
                     return false;
                 }
                 return true;
             case 3:
                 const { afterEdu, workplace, nature } = formData.intent || {};
-                // Check if all Intent fields are selected
                 if (!afterEdu || !workplace || !nature) {
                     return false;
                 }
@@ -58,12 +56,8 @@ const Survey = () => {
     };
 
     const handleFinish = () => {
-        // Reset progress for new journey
         localStorage.removeItem('completedCourses');
         localStorage.removeItem('enrolledCourses');
-
-        // Here we would normally call an API or process the data
-        // For now, we mock valid domains based on data
         navigate('/results', { state: { formData } });
     };
 
@@ -83,10 +77,9 @@ const Survey = () => {
     };
 
     return (
-        <div className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-            {/* Simple Progress Bar */}
-            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)' }}>
-                <div style={{ width: `${(step / 4) * 100}%`, height: '100%', background: 'var(--gradient-main)', transition: 'width 0.3s ease' }}></div>
+        <div className="survey-container">
+            <div className="survey-progress">
+                <div className="survey-progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
             </div>
 
             <AnimatePresence mode="wait">

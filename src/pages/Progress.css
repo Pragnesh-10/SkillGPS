@@ -1,0 +1,70 @@
+/* ─── Progress Page ────────────────────────────────────────────── */
+
+.domain-mastery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-5);
+}
+
+.domain-card {
+    padding: var(--space-6);
+}
+
+.domain-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+    align-items: center;
+}
+
+.domain-card-header h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.domain-card-percent {
+    font-weight: 800;
+    font-size: var(--text-lg);
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.domain-card-progress {
+    margin-bottom: var(--space-2);
+}
+
+.domain-card-count {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    text-align: right;
+}
+
+/* ─── Section Title ────────────────────────────────────────────── */
+.progress-section-title {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-5);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* ─── Global Stats Grid ───────────────────────────────────────── */
+.global-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-6);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .domain-mastery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .global-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

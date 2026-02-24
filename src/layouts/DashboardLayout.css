@@ -1,8 +1,33 @@
+/* ─── Dashboard Layout ─────────────────────────────────────────── */
 .dashboard-layout {
     min-height: 100vh;
     background: var(--bg-dark);
 }
 
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: var(--text-base);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    margin: var(--space-5) 0 0 var(--space-5);
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+}
+
 .main-content {
-    padding: 24px 0;
+    padding: var(--space-6) 0;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 100px);
+}
+
+.main-content>div:first-child {
+    flex: 1;
 }

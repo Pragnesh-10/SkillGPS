@@ -4,25 +4,24 @@ import { motion } from 'framer-motion';
 const StepWrapper = ({ title, description, children, onNext, onBack, isLastStep }) => {
     return (
         <motion.div
-            className="card"
-            style={{ maxWidth: '600px', width: '100%', margin: '0 auto' }}
+            className="card step-card"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
         >
-            <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '2rem', marginBottom: '8px', color: 'var(--text-main)' }}>{title}</h2>
-                <p style={{ color: 'var(--text-muted)' }}>{description}</p>
+            <div className="step-header">
+                <h2>{title}</h2>
+                <p>{description}</p>
             </div>
 
-            <div style={{ marginBottom: '40px' }}>
+            <div className="step-content">
                 {children}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
+            <div className="step-actions">
                 {onBack ? (
-                    <button onClick={onBack} style={{ padding: '12px 24px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    <button className="btn-ghost" onClick={onBack}>
                         Back
                     </button>
                 ) : (

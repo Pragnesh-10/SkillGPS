@@ -6,61 +6,228 @@
     align-items: center;
     text-align: center;
     position: relative;
+    overflow: hidden;
 }
 
+/* ─── Animated bg orbs ─────────────────────────────────────────── */
+.welcome-container::before,
+.welcome-container::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(120px);
+}
+
+.welcome-container::before {
+    width: 700px;
+    height: 700px;
+    top: -15%;
+    left: -10%;
+    background: radial-gradient(circle, rgba(232, 168, 56, 0.10) 0%, transparent 70%);
+    animation: welcome-orb-1 14s ease-in-out infinite alternate;
+}
+
+.welcome-container::after {
+    width: 600px;
+    height: 600px;
+    bottom: -15%;
+    right: -10%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+    animation: welcome-orb-2 16s ease-in-out infinite alternate;
+}
+
+@keyframes welcome-orb-1 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        transform: translate(80px, 50px) scale(1.2);
+    }
+}
+
+@keyframes welcome-orb-2 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        transform: translate(-60px, -40px) scale(1.15);
+    }
+}
+
+/* Third orb — coral rose */
+.welcome-orb-accent {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    top: 40%;
+    right: 30%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(244, 114, 182, 0.06) 0%, transparent 70%);
+    filter: blur(100px);
+    pointer-events: none;
+    animation: welcome-orb-3 18s ease-in-out infinite alternate;
+}
+
+@keyframes welcome-orb-3 {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: translate(30px, -40px) scale(1.1);
+        opacity: 0.3;
+    }
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ─── Badge ────────────────────────────────────────────────────── */
 .welcome-badge {
-    margin-bottom: 24px;
+    margin-bottom: var(--space-8);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: var(--space-2);
+    padding: 10px 22px;
+    background: rgba(139, 92, 246, 0.06);
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(139, 92, 246, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-.welcome-badge span {
-    font-size: 14px;
-    color: var(--text-muted);
+.welcome-badge-text {
+    font-size: var(--text-sm);
+    color: var(--secondary-light);
+    font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
+/* ─── Title ────────────────────────────────────────────────────── */
 .welcome-title {
-    font-size: 4rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin-bottom: 24px;
-    letter-spacing: -0.02em;
+    font-size: var(--text-hero);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: var(--space-6);
+    letter-spacing: -0.04em;
 }
 
+.welcome-title .gradient-text {
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 40px rgba(232, 168, 56, 0.15));
+}
+
+/* ─── Description ──────────────────────────────────────────────── */
 .welcome-description {
-    font-size: 1.25rem;
+    font-size: var(--text-xl);
     color: var(--text-muted);
-    max-width: 600px;
-    margin-bottom: 48px;
+    max-width: 520px;
+    margin-bottom: var(--space-12);
+    line-height: 1.8;
+    font-weight: 400;
 }
 
+/* ─── CTA Button ───────────────────────────────────────────────── */
 .welcome-cta {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1.1rem;
-    padding: 16px 32px;
+    gap: var(--space-3);
+    font-size: var(--text-lg);
+    padding: 18px 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 40px rgba(232, 168, 56, 0.25);
+    font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
+.welcome-cta svg {
+    transition: transform var(--transition-fast);
+}
+
+.welcome-cta:hover svg {
+    transform: translateX(5px);
+}
+
+/* ─── Stats Section ────────────────────────────────────────────── */
 .welcome-stats {
-    margin-top: 80px;
+    margin-top: var(--space-20);
     display: flex;
-    gap: 40px;
+    gap: var(--space-12);
     justify-content: center;
-    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-item {
+    text-align: center;
+    padding: var(--space-5);
 }
 
 .stat-item h3 {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: var(--text-3xl);
+    font-weight: 800;
     color: var(--text-main);
+    margin-bottom: var(--space-1);
+    letter-spacing: -0.02em;
 }
 
 .stat-item p {
     color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* ─── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: clamp(2rem, 8vw, 3rem);
+    }
+
+    .welcome-description {
+        font-size: var(--text-base);
+        padding: 0 var(--space-4);
+    }
+
+    .welcome-cta {
+        font-size: var(--text-base);
+        padding: 16px 28px;
+    }
+
+    .welcome-stats {
+        gap: var(--space-6);
+        margin-top: var(--space-12);
+        flex-wrap: wrap;
+    }
+
+    .stat-item h3 {
+        font-size: var(--text-2xl);
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-badge {
+        padding: 8px 14px;
+    }
+
+    .welcome-badge-text {
+        font-size: var(--text-xs);
+    }
+
+    .welcome-stats {
+        gap: var(--space-4);
+    }
 }

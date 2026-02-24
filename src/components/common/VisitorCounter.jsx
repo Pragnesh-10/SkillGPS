@@ -26,14 +26,7 @@ const VisitorCounter = () => {
     if (loading || count === null) return null;
 
     return (
-        <div style={{
-            textAlign: 'center',
-            padding: '10px',
-            marginTop: '20px',
-            color: 'var(--text-muted)',
-            fontSize: '0.8rem',
-            borderTop: '1px solid rgba(255,255,255,0.05)'
-        }}>
+        <div className="visitor-counter">
             Total Visitors: {count.toLocaleString()}
         </div>
     );

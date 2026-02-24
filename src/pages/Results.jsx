@@ -6,6 +6,7 @@ import { getCareerRecommendations } from '../services/ai';
 import { getAllDomains } from '../data/courses';
 import ResumeUpload from '../components/common/ResumeUpload';
 import SkillsGapAnalysis from '../components/common/SkillsGapAnalysis';
+import './Results.css';
 
 const Results = () => {
     const { state } = useLocation();
@@ -22,39 +23,33 @@ const Results = () => {
         let cancelled = false;
 
         (async () => {
-            // Check if user skipped survey
             const skipSurvey = state?.skipSurvey || localStorage.getItem('skipSurvey') === 'true';
 
             if (skipSurvey) {
-                // Show all available career domains
                 setIsSkipSurvey(true);
                 const allDomains = getAllDomains();
                 const domainsData = allDomains.map(career => ({ career, prob: 1 }));
                 setDomains(domainsData);
                 localStorage.setItem('suggestedDomains', JSON.stringify(domainsData));
 
-                // Trigger chatbot with skip survey context
                 setTimeout(() => {
                     window.dispatchEvent(new CustomEvent('openChatbotWithWelcome', {
                         detail: {
                             careers: allDomains,
-                            fromSurvey: false // Indicate this is from skip survey
+                            fromSurvey: false
                         }
                     }));
                 }, 1500);
 
                 setLoading(false);
             } else if (state?.formData) {
-                // Survey completed - get personalized recommendations
                 try {
                     const preds = await getCareerRecommendations(state.formData);
                     if (!cancelled) {
-                        // normalize to array of {career, prob}
                         const arr = preds.map(p => (typeof p === 'string' ? { career: p, prob: 1 } : p));
                         setDomains(arr);
                         localStorage.setItem('suggestedDomains', JSON.stringify(arr));
 
-                        // Trigger chatbot to open after results are shown
                         setTimeout(() => {
                             window.dispatchEvent(new CustomEvent('openChatbotWithWelcome', {
                                 detail: {
@@ -62,7 +57,7 @@ const Results = () => {
                                     fromSurvey: true
                                 }
                             }));
-                        }, 1500); // Wait 1.5s so user can see the results first
+                        }, 1500);
                     }
                 } catch (err) {
                     console.error('Error fetching recommendations', err);
@@ -75,7 +70,6 @@ const Results = () => {
                     if (!cancelled) setLoading(false);
                 }
             } else {
-                // Fallback for direct access without data
                 const fallbacks = [{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }];
                 setDomains(fallbacks);
                 localStorage.setItem('suggestedDomains', JSON.stringify(fallbacks));
@@ -87,32 +81,25 @@ const Results = () => {
     }, [state]);
 
     const handleDomainSelect = (domain) => {
-        // Navigate to Dashboard with selected domain
-        // passing it in state or context (mocking persistent state)
         navigate('/dashboard', { state: { selectedDomain: domain } });
     };
 
     if (loading) {
         return (
-            <div className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <div style={{ marginBottom: '24px' }}>
-                    <style>{`
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-            .loader { animation: spin 1s linear infinite; }
-          `}</style>
-                    <Loader size={48} className="loader" color="var(--primary)" />
+            <div className="container results-loading">
+                <div className="results-loading-icon">
+                    <Loader size={48} className="loader-spin" color="var(--primary)" />
                 </div>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Analyzing your profile...</h2>
-                <p style={{ color: 'var(--text-muted)' }}>Matching your skills with 50+ career paths</p>
+                <h2>Analyzing your profile...</h2>
+                <p>Matching your skills with 50+ career paths</p>
             </div>
         );
     }
 
     return (
-        <div className="container" style={{ minHeight: '100vh', paddingTop: '60px', paddingBottom: '60px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div className="container results-container">
+            <div className="results-header">
                 <motion.h1
-                    style={{ fontSize: '2.5rem', marginBottom: '16px' }}
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5 }}
@@ -120,7 +107,6 @@ const Results = () => {
                     {isSkipSurvey ? 'Explore All Career Paths' : 'Your Perfect Career Matches'}
                 </motion.h1>
                 <motion.p
-                    style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
@@ -132,7 +118,7 @@ const Results = () => {
             </div>
 
             <motion.div
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}
+                className="results-grid"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ staggerChildren: 0.15 }}
@@ -140,51 +126,36 @@ const Results = () => {
                 {domains.map((d, index) => (
                     <motion.div
                         key={d.career}
-                        className="card"
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'flex-start',
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}
+                        className={`card career-card ${index === 0 && !isSkipSurvey ? 'best-match' : ''}`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         whileHover={{ y: -5, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}
                         transition={{ duration: 0.4 }}
                     >
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '4px',
-                            background: index === 0 ? 'var(--gradient-main)' : 'var(--border-light)'
-                        }}></div>
+                        <div className="career-card-accent" />
 
-                        <h3 style={{ fontSize: '1.5rem', marginBottom: '12px', marginTop: '12px' }}>{d.career}</h3>
-                        <p style={{ color: 'var(--text-muted)', marginBottom: '8px', flex: 1 }}>
+                        <h3>{d.career}</h3>
+                        <p className="career-card-desc">
                             {d.career === 'UI/UX Designer' ? 'Design intuitive interfaces and craft seamless user experiences.' :
                                 d.career === 'Data Scientist' ? 'Analyze complex data sets to solve business problems using ML.' :
                                     d.career === 'Backend Developer' ? 'Build robust server-side applications and scalable APIs.' :
                                         'A great career path matching your logical and analytical skills.'}
                         </p>
 
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div className="career-card-footer">
                             <motion.button
                                 className="btn-primary"
-                                style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}
                                 onClick={() => handleDomainSelect(d.career)}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
                                 Start Learning Path
                             </motion.button>
-                            {!isSkipSurvey && <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{Math.round((d.prob || 1) * 100)}% match</div>}
+                            {!isSkipSurvey && <span className="career-card-match">{Math.round((d.prob || 1) * 100)}% match</span>}
                         </div>
 
                         {index === 0 && !isSkipSurvey && (
-                            <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div className="best-match-badge">
                                 <CheckCircle size={12} /> BEST MATCH
                             </div>
                         )}
@@ -193,11 +164,13 @@ const Results = () => {
             </motion.div>
 
             {/* Resume Upload Section */}
-            <ResumeUpload onResumeAnalyzed={(data) => setResumeData(data)} />
+            <div className="results-resume-section">
+                <ResumeUpload onResumeAnalyzed={(data) => setResumeData(data)} />
+            </div>
 
             {/* Skills Gap Analysis for each career */}
             {resumeData && domains.length > 0 && (
-                <div style={{ marginTop: '40px' }}>
+                <div className="results-resume-section">
                     {domains.map((d, index) => (
                         <SkillsGapAnalysis
                             key={d.career}

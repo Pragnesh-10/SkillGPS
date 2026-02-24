@@ -1,0 +1,183 @@
+/* ─── Subscription Page ────────────────────────────────────────── */
+
+.subscription-container {
+    text-align: center;
+    max-width: 900px;
+}
+
+.subscription-header {
+    margin-bottom: var(--space-16);
+}
+
+.subscription-header h1 {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--space-4);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.subscription-header p {
+    font-size: var(--text-xl);
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+/* ─── Plans Row ────────────────────────────────────────────────── */
+.plans-row {
+    display: flex;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    text-align: left;
+}
+
+/* ─── Plan Card ────────────────────────────────────────────────── */
+.plan-card {
+    flex: 1;
+    min-width: 280px;
+    position: relative;
+    transition: all var(--transition-normal);
+}
+
+.plan-card.premium {
+    border: 1.5px solid var(--primary);
+    transform: scale(1.03);
+    box-shadow: 0 0 60px rgba(232, 168, 56, 0.08), var(--shadow-glow);
+}
+
+.plan-card.premium:hover {
+    box-shadow: 0 0 80px rgba(232, 168, 56, 0.12), var(--shadow-glow-lg);
+}
+
+/* ─── Recommended Badge ───────────────────────────────────────── */
+.plan-recommended {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--gradient-main);
+    padding: 5px 20px;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    box-shadow: var(--shadow-glow);
+}
+
+/* ─── Plan Title ───────────────────────────────────────────────── */
+.plan-title {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-2);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.plan-title.premium {
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ─── Plan Price ───────────────────────────────────────────────── */
+.plan-price {
+    font-size: var(--text-5xl);
+    font-weight: 800;
+    margin-bottom: var(--space-6);
+    letter-spacing: -0.03em;
+}
+
+.plan-price-period {
+    font-size: var(--text-base);
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+/* ─── Features List ────────────────────────────────────────────── */
+.plan-features {
+    list-style: none;
+    margin-bottom: var(--space-8);
+}
+
+.plan-feature {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    align-items: center;
+}
+
+.plan-feature-icon {
+    border-radius: 50%;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.plan-feature-icon.active {
+    background: var(--primary-subtle);
+}
+
+.plan-feature-icon.inactive {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.plan-feature-text {
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+.plan-feature-text.disabled {
+    color: var(--text-muted);
+    opacity: 0.4;
+}
+
+/* ─── Plan Button ──────────────────────────────────────────────── */
+.plan-btn {
+    width: 100%;
+    padding: var(--space-4);
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: var(--text-base);
+    transition: all var(--transition-normal);
+    letter-spacing: 0.01em;
+}
+
+.plan-btn.primary {
+    background: var(--gradient-main);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-glow);
+}
+
+.plan-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow-lg);
+}
+
+.plan-btn.secondary {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    border: 1px solid var(--border-light);
+}
+
+.plan-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .subscription-header h1 {
+        font-size: var(--text-3xl);
+    }
+
+    .plans-row {
+        flex-direction: column;
+    }
+
+    .plan-card.premium {
+        transform: scale(1);
+    }
+}

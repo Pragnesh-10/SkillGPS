@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle, Star } from 'lucide-react';
+import { Lock, Star } from 'lucide-react';
+import './Experts.css';
 
 const experts = [
     { id: 1, name: 'Sarah Chen', role: 'Staff Data Scientist', company: 'Google', exp: '8 years', domain: 'Data Scientist' },
@@ -23,7 +24,6 @@ const Experts = () => {
 
     const handleConnect = (expert) => {
         if (!isPremium) {
-            // Trigger Paywall / Navigate to Subscription
             navigate('/subscription');
         } else {
             setSelectedExpert(expert);
@@ -38,8 +38,6 @@ const Experts = () => {
             return;
         }
 
-        // Simulate sending email
-        const userEmail = "user@example.com"; // Mock user email
         const emailContent = `
         Subject: Meeting Confirmation with ${selectedExpert.name} - SkillGPS
 
@@ -60,64 +58,45 @@ const Experts = () => {
 
         console.log("SENDING EMAIL...", emailContent);
 
-        // Close modal and reset
         setShowModal(false);
         setMeetingTime('');
         setSelectedExpert(null);
 
-        // Show success message
         alert(`Request sent to ${selectedExpert.name}! A confirmation email has been sent to you.`);
     };
 
     return (
         <div className="container" style={{ position: 'relative' }}>
-            <div style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '2.5rem' }}>Talk to Industry Experts</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Get 1:1 guidance, mock interviews, and resume reviews.</p>
+            <div className="page-header">
+                <h1>Talk to Industry Experts</h1>
+                <p>Get 1:1 guidance, mock interviews, and resume reviews.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            <div className="experts-grid">
                 {experts.map(expert => (
-                    <div key={expert.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--gradient-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>
+                    <div key={expert.id} className="card expert-card">
+                        <div className="expert-card-profile">
+                            <div className="expert-avatar">
                                 {expert.name.charAt(0)}
                             </div>
                             <div>
-                                <h3 style={{ fontSize: '1.2rem', fontWeight: '600' }}>{expert.name}</h3>
-                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{expert.role} at {expert.company}</p>
+                                <h3 className="expert-name">{expert.name}</h3>
+                                <p className="expert-role">{expert.role} at {expert.company}</p>
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.9rem', background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: 'var(--radius-sm)' }}>
+                        <div className="expert-meta">
                             <span>Exp: {expert.exp}</span>
-                            <span>•</span>
+                            <span className="expert-meta-separator">•</span>
                             <span>{expert.domain}</span>
                         </div>
 
                         <button
-                            className={isPremium ? 'btn-primary' : ''}
-                            style={{
-                                marginTop: 'auto',
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: 'var(--radius-sm)',
-                                border: isPremium ? 'none' : '1px solid var(--border-light)',
-                                background: isPremium ? 'var(--gradient-main)' : 'transparent',
-                                color: isPremium ? 'white' : 'var(--text-muted)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
+                            className={`expert-connect-btn ${isPremium ? 'unlocked' : 'locked'}`}
                             onClick={() => handleConnect(expert)}
                         >
                             {isPremium ? 'Connect Now' : (
-                                <>
-                                    Connect <Lock size={16} />
-                                </>
+                                <>Connect <Lock size={16} /></>
                             )}
                         </button>
                     </div>
@@ -126,78 +105,32 @@ const Experts = () => {
 
             {/* Modal Overlay */}
             {showModal && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        backgroundColor: '#1a1a1a',
-                        padding: '30px',
-                        borderRadius: '12px',
-                        width: '90%',
-                        maxWidth: '500px',
-                        border: '1px solid #333'
-                    }}>
-                        <h2 style={{ marginBottom: '20px', fontSize: '1.5rem' }}>Schedule with {selectedExpert?.name}</h2>
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '500px' }}>
+                        <form onSubmit={handleConfirmMeeting} className="meeting-form">
+                            <h2>Schedule with {selectedExpert?.name}</h2>
 
-                        <form onSubmit={handleConfirmMeeting} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', color: '#ccc' }}>Select Date & Time</label>
+                                <label className="label">Select Date & Time</label>
                                 <input
                                     type="datetime-local"
                                     value={meetingTime}
                                     onChange={(e) => setMeetingTime(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #333',
-                                        backgroundColor: '#2a2a2a',
-                                        color: 'white',
-                                        fontSize: '1rem'
-                                    }}
+                                    className="input"
                                     min={new Date().toISOString().slice(0, 16)}
                                     required
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                            <div className="meeting-form-actions">
                                 <button
                                     type="button"
+                                    className="meeting-cancel-btn"
                                     onClick={() => setShowModal(false)}
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #333',
-                                        backgroundColor: 'transparent',
-                                        color: '#ccc',
-                                        cursor: 'pointer'
-                                    }}
                                 >
                                     Cancel
                                 </button>
-                                <button
-                                    type="submit"
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        background: 'var(--gradient-main)',
-                                        color: 'white',
-                                        fontWeight: '600',
-                                        cursor: 'pointer'
-                                    }}
-                                >
+                                <button type="submit" className="meeting-confirm-btn">
                                     Confirm Meeting
                                 </button>
                             </div>

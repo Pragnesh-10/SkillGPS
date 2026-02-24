@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Welcome from './pages/Welcome';
 import Survey from './pages/Survey';
 import Results from './pages/Results';
@@ -13,11 +13,21 @@ import Chatbot from './components/common/Chatbot';
 import Header from './components/common/Header';
 import { useCodeProtection } from './hooks/useCodeProtection';
 
+/* Scroll to top on route change */
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [pathname]);
+  return null;
+};
+
 function App() {
   useCodeProtection();
 
   return (
     <Router>
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route path="/" element={<Welcome />} />
