@@ -103,11 +103,12 @@
   --radius-xl: 36px;
   --radius-full: 9999px;
 
-  /* Transitions — Apple's smooth curves */
-  --transition-fast: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
-  --transition-normal: 350ms cubic-bezier(0.25, 0.1, 0.25, 1);
-  --transition-slow: 600ms cubic-bezier(0.25, 0.1, 0.25, 1);
-  --transition-spring: 700ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* Transitions — Apple's fluid spring physics */
+  --transition-fast: 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  --transition-normal: 400ms cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-slow: 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-spring: 800ms cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  --transition-bounce: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Glass — frosted Apple */
   --glass-bg: rgba(29, 29, 31, 0.72);

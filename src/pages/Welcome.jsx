@@ -24,7 +24,7 @@ const Welcome = () => {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 200, damping: 25, mass: 1 } }
   };
 
   return (
@@ -56,8 +56,8 @@ const Welcome = () => {
           <motion.button
             className="btn-primary welcome-cta"
             onClick={() => setShowChoiceModal(true)}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             variants={itemVariants}
           >
             Start Your Journey <ArrowRight size={20} />

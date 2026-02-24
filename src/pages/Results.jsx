@@ -105,14 +105,14 @@ const Results = () => {
                 <motion.h1
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
                 >
                     {isSkipSurvey ? 'Explore All Career Paths' : 'Your Perfect Career Matches'}
                 </motion.h1>
                 <motion.p
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
+                    transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 25, mass: 1 }}
                 >
                     {isSkipSurvey
                         ? 'Browse through all available career domains and choose the path that excites you the most.'
@@ -130,10 +130,10 @@ const Results = () => {
                     <motion.div
                         key={d.career}
                         className={`card career-card ${index === 0 && !isSkipSurvey ? 'best-match' : ''}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover={{ y: -5, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}
-                        transition={{ duration: 0.4 }}
+                        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        whileHover={{ y: -4, scale: 1.01, boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}
+                        transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
                     >
                         <div className="career-card-accent" />
 
