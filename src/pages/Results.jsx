@@ -70,9 +70,12 @@ const Results = () => {
                     if (!cancelled) setLoading(false);
                 }
             } else {
-                const fallbacks = [{ career: 'Data Scientist', prob: 1 }, { career: 'Backend Developer', prob: 1 }, { career: 'UI/UX Designer', prob: 1 }];
-                setDomains(fallbacks);
-                localStorage.setItem('suggestedDomains', JSON.stringify(fallbacks));
+                // No survey taken and no form data — show all domains (same as skip survey)
+                setIsSkipSurvey(true);
+                const allDomains = getAllDomains();
+                const domainsData = allDomains.map(career => ({ career, prob: 1 }));
+                setDomains(domainsData);
+                localStorage.setItem('suggestedDomains', JSON.stringify(domainsData));
                 setLoading(false);
             }
         })();
