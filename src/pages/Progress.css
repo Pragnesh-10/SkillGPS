@@ -1,4 +1,4 @@
-/* ─── Progress Page ────────────────────────────────────────────── */
+/* ─── Progress Page — Apple style ──────────────────────────────── */
 
 .domain-mastery-grid {
     display: grid;
@@ -7,7 +7,7 @@
 }
 
 .domain-card {
-    padding: var(--space-6);
+    padding: var(--space-8);
 }
 
 .domain-card-header {
@@ -21,16 +21,15 @@
     font-size: var(--text-lg);
     font-weight: 600;
     margin: 0;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 .domain-card-percent {
-    font-weight: 800;
+    font-weight: 700;
     font-size: var(--text-lg);
-    background: var(--gradient-main);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-main);
+    -webkit-text-fill-color: unset;
+    background: none;
 }
 
 .domain-card-progress {
@@ -43,22 +42,19 @@
     text-align: right;
 }
 
-/* ─── Section Title ────────────────────────────────────────────── */
 .progress-section-title {
     font-size: var(--text-2xl);
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--space-6);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
 }
 
-/* ─── Global Stats Grid ───────────────────────────────────────── */
 .global-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-6);
+    gap: var(--space-5);
 }
 
-/* ─── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .domain-mastery-grid {
         grid-template-columns: 1fr;

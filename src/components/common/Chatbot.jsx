@@ -767,11 +767,11 @@ const Chatbot = () => {
             return `
                 <div style="display:flex;gap:12px;align-items:flex-start;margin:12px 0;${isUser ? 'flex-direction:row-reverse;' : ''}">
                     <div style="min-width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;
-                        background:${isUser ? 'linear-gradient(135deg,#e8a838,#c78a22)' : 'linear-gradient(135deg,rgba(232,168,56,0.15),rgba(139,92,246,0.15))'};">
+                        background:${isUser ? 'linear-gradient(135deg,#0071e3,#2997ff)' : 'linear-gradient(135deg,rgba(41,151,255,0.15),rgba(139,92,246,0.15))'};">
                         ${isUser ? '👤' : '🤖'}
                     </div>
                     <div style="max-width:80%;padding:12px 16px;border-radius:16px;line-height:1.7;font-size:14px;
-                        ${isUser ? 'background:#e8a838;color:white;border-bottom-right-radius:4px;' :
+                        ${isUser ? 'background:#0071e3;color:white;border-bottom-right-radius:4px;' :
                     'background:#f8f9fa;color:#1a1a2e;border:1px solid #e9ecef;border-bottom-left-radius:4px;'}">
                         ${rendered}
                     </div>
@@ -788,11 +788,11 @@ const Chatbot = () => {
   table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
   th{background:#f0f0f0;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid #ddd}
   td{padding:6px 10px;border-bottom:1px solid #eee}
-  h2,h3{color:#e8a838;margin:10px 0 6px;font-size:16px}
+  h2,h3{color:#2997ff;margin:10px 0 6px;font-size:16px}
   strong{color:#c97a20}
   code{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-size:12px}
-  a{color:#e8a838}
-  blockquote{border-left:3px solid #e8a838;padding-left:12px;color:#666;margin:8px 0}
+  a{color:#2997ff}
+  blockquote{border-left:3px solid #2997ff;padding-left:12px;color:#666;margin:8px 0}
   hr{border:none;border-top:1px solid #eee;margin:16px 0}
   ul,ol{padding-left:20px;margin:6px 0}
   .footer{text-align:center;margin-top:40px;color:#999;font-size:12px;border-top:1px solid #eee;padding-top:16px}
