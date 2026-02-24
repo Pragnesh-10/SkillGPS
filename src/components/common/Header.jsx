@@ -65,7 +65,7 @@ const Header = () => {
                                     <div className="dropdown-separator"></div>
                                     <MenuItem icon={LogOut} label="Log Out" onClick={() => {
                                         localStorage.removeItem('isAuthenticated');
-                                        navigate('/login');
+                                        navigate('/');
                                     }} danger />
                                 </div>
                             )}
@@ -99,7 +99,7 @@ const Header = () => {
                     onClick={() => {
                         localStorage.removeItem('isAuthenticated');
                         setMobileNavOpen(false);
-                        navigate('/login');
+                        navigate('/');
                     }}
                 >
                     Log Out
