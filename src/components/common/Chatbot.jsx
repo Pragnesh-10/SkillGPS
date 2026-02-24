@@ -1033,7 +1033,6 @@ ${messagesHtml}
                             </div>
                         </div>
 
-                        <div className="chatbot-footer">BUILT WITH ❤️ BY SKILLGPS</div>
                     </motion.div>
                 )}
             </AnimatePresence>
