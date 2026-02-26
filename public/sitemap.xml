@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- SEO Sitemap for SkillGPS Vercel Deployment -->
+  <url>
+    <loc>https://skillgps.vercel.app/</loc>
+    <lastmod>2024-05-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- Add more <url> blocks for other pages like /about, /survey, etc. -->
+</urlset>
