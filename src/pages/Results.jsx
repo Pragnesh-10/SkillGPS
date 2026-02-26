@@ -27,7 +27,7 @@ const Results = () => {
 
             if (skipSurvey) {
                 setIsSkipSurvey(true);
-                const allDomains = getAllDomains();
+                const allDomains = getAllDomains().sort((a, b) => a.localeCompare(b));
                 const domainsData = allDomains.map(career => ({ career, prob: 1 }));
                 setDomains(domainsData);
                 localStorage.setItem('suggestedDomains', JSON.stringify(domainsData));
@@ -72,7 +72,7 @@ const Results = () => {
             } else {
                 // No survey taken and no form data — show all domains (same as skip survey)
                 setIsSkipSurvey(true);
-                const allDomains = getAllDomains();
+                const allDomains = getAllDomains().sort((a, b) => a.localeCompare(b));
                 const domainsData = allDomains.map(career => ({ career, prob: 1 }));
                 setDomains(domainsData);
                 localStorage.setItem('suggestedDomains', JSON.stringify(domainsData));
