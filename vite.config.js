@@ -10,8 +10,8 @@ export default defineConfig({
     setupFiles: './src/__tests__/setup.js',
   },
   build: {
-    // Disable source maps in production to prevent easy debugging
-    sourcemap: false,
+    // Generate source maps in production for better debugging
+    sourcemap: true,
     // Minify the code for production
     minify: 'terser',
     terserOptions: {
@@ -33,6 +33,7 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['framer-motion', 'lucide-react'],
+          'ai-vendor': ['@mlc-ai/web-llm', '@google/generative-ai', 'openai'],
         },
       },
     },

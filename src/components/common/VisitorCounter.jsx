@@ -6,7 +6,7 @@ const VisitorCounter = () => {
 
     useEffect(() => {
         const fetchCount = async () => {
-            const base = import.meta.env.VITE_ML_API_BASE || 'http://localhost:8000';
+            const base = import.meta.env.VITE_ML_API_BASE || '';
             try {
                 const res = await fetch(`${base}/visitor-count`);
                 if (res.ok) {
