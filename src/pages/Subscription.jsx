@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Subscription.css';
@@ -47,6 +48,12 @@ const Subscription = () => {
 
     return (
         <div className="container subscription-container">
+            <Helmet>
+                <title>Premium Career Mentorship | SkillGPS</title>
+                <meta name="description" content="Unlock your full career potential with SkillGPS Premium. Get personalized learning paths, unlimited expert access, mock interviews, and 1:1 mentorship sessions." />
+                <link rel="canonical" href="https://skillgps.vercel.app/subscription" />
+            </Helmet>
+
             <div className="subscription-header">
                 <h1>Invest in your Future</h1>
                 <p>Unlock the full potential of your career with personalized guidance.</p>

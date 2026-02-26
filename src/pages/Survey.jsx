@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import InterestStep from '../components/survey/InterestStep';
 import WorkStyleStep from '../components/survey/WorkStyleStep';
@@ -78,6 +79,12 @@ const Survey = () => {
 
     return (
         <div className="survey-container">
+            <Helmet>
+                <title>Career Assessment Survey | SkillGPS</title>
+                <meta name="description" content="Take our AI-driven career assessment survey to discover your ideal tech career path based on your skills, interests, and working style." />
+                <link rel="canonical" href="https://skillgps.vercel.app/survey" />
+            </Helmet>
+
             <div className="survey-progress">
                 <div className="survey-progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
             </div>

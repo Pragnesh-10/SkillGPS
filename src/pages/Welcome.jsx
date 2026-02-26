@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { ArrowRight, Zap } from 'lucide-react';
 import SurveyChoiceModal from '../components/common/SurveyChoiceModal';
@@ -29,6 +30,25 @@ const Welcome = () => {
 
   return (
     <div className="welcome-container">
+      <Helmet>
+        <title>SkillGPS — AI Career Guidance & Roadmaps</title>
+        <meta name="description" content="Stop guessing your future. SkillGPS uses AI to analyze your skills and build personalized learning roadmaps for Data Science, Frontend, Backend, and more." />
+        <link rel="canonical" href="https://skillgps.vercel.app/" />
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "SkillGPS",
+              "url": "https://skillgps.vercel.app/",
+              "description": "AI-powered career guidance platform providing personalized learning roadmaps, curated courses, and expert mentorship.",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "All"
+            }
+          `}
+        </script>
+      </Helmet>
+
       {/* Third accent orb */}
       <div className="welcome-orb-accent" />
 

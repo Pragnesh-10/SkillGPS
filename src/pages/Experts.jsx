@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Lock, Star } from 'lucide-react';
 import './Experts.css';
 
@@ -67,6 +68,35 @@ const Experts = () => {
 
     return (
         <div className="container" style={{ position: 'relative' }}>
+            <Helmet>
+                <title>Connect with Industry Experts | SkillGPS</title>
+                <meta name="description" content="Get 1:1 guidance, mock interviews, and resume reviews from industry experts at Google, Netflix, Amazon, and Airbnb." />
+                <link rel="canonical" href="https://skillgps.vercel.app/experts" />
+                <script type="application/ld+json">
+                    {`
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "ItemList",
+                            "itemListElement": [
+                                ${experts.map((e, index) => `{
+                                    "@type": "ListItem",
+                                    "position": ${index + 1},
+                                    "item": {
+                                        "@type": "Person",
+                                        "name": "${e.name}",
+                                        "jobTitle": "${e.role}",
+                                        "worksFor": {
+                                            "@type": "Organization",
+                                            "name": "${e.company}"
+                                        }
+                                    }
+                                }`).join(',')}
+                            ]
+                        }
+                    `}
+                </script>
+            </Helmet>
+
             <div className="page-header">
                 <h1>Talk to Industry Experts</h1>
                 <p>Get 1:1 guidance, mock interviews, and resume reviews.</p>

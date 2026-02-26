@@ -12,6 +12,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Experts = lazy(() => import('./pages/Experts'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const Progress = lazy(() => import('./pages/Progress'));
+const CareerLanding = lazy(() => import('./pages/CareerLanding'));
 
 /* Scroll to top on route change */
 const ScrollToTop = () => {
@@ -42,6 +43,7 @@ function App() {
             <Route path="/" element={<Welcome />} />
             <Route path="/survey" element={<Survey />} />
             <Route path="/results" element={<Results />} />
+            <Route path="/careers/:domainSlug" element={<CareerLanding />} />
 
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
