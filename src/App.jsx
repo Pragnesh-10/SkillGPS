@@ -1,17 +1,17 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Welcome from './pages/Welcome';
-import Survey from './pages/Survey';
-import Results from './pages/Results';
-import DashboardLayout from './layouts/DashboardLayout';
-import Dashboard from './pages/Dashboard';
-import Experts from './pages/Experts';
-import Subscription from './pages/Subscription';
-import Progress from './pages/Progress';
-import Chatbot from './components/common/Chatbot';
 import Header from './components/common/Header';
+import Chatbot from './components/common/Chatbot';
 import { useCodeProtection } from './hooks/useCodeProtection';
+
+const Welcome = lazy(() => import('./pages/Welcome'));
+const Survey = lazy(() => import('./pages/Survey'));
+const Results = lazy(() => import('./pages/Results'));
+const DashboardLayout = lazy(() => import('./layouts/DashboardLayout'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Experts = lazy(() => import('./pages/Experts'));
+const Subscription = lazy(() => import('./pages/Subscription'));
+const Progress = lazy(() => import('./pages/Progress'));
 
 /* Scroll to top on route change */
 const ScrollToTop = () => {
@@ -22,6 +22,13 @@ const ScrollToTop = () => {
   return null;
 };
 
+// Simple loading fallback
+const PageLoader = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'rgba(255,255,255,0.7)' }}>
+    <div className="spinner">Loading...</div>
+  </div>
+);
+
 function App() {
   useCodeProtection();
 
@@ -29,18 +36,22 @@ function App() {
     <Router>
       <ScrollToTop />
       <Header />
-      <Routes>
-        <Route path="/" element={<Welcome />} />
-        <Route path="/survey" element={<Survey />} />
-        <Route path="/results" element={<Results />} />
+      <main className="app-main">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Welcome />} />
+            <Route path="/survey" element={<Survey />} />
+            <Route path="/results" element={<Results />} />
 
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/experts" element={<Experts />} />
-          <Route path="/subscription" element={<Subscription />} />
-        </Route>
-      </Routes>
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="/experts" element={<Experts />} />
+              <Route path="/subscription" element={<Subscription />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </main>
       <Chatbot />
     </Router>
   );

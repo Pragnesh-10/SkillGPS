@@ -856,23 +856,24 @@ ${messagesHtml}
                                     onClick={toggleAiMode}
                                     className={`chatbot-close-btn ai-mode-btn ${aiMode ? 'ai-active' : ''}`}
                                     title={aiMode ? 'AI Mode ON (click to disable)' : 'Enable AI Mode (runs in browser)'}
+                                    aria-label={aiMode ? 'Disable AI Mode' : 'Enable AI Mode'}
                                     disabled={modelLoading}
                                 >
                                     {modelLoading ? <Loader size={16} className="spin-icon" /> : <Zap size={16} />}
                                 </button>
-                                <button onClick={() => setIsMuted(!isMuted)} className="chatbot-close-btn" title={isMuted ? "Unmute" : "Mute"}>
+                                <button onClick={() => setIsMuted(!isMuted)} className="chatbot-close-btn" title={isMuted ? "Unmute" : "Mute"} aria-label={isMuted ? "Unmute voice" : "Mute voice"}>
                                     {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                                 </button>
-                                <button onClick={() => resumeInputRef.current?.click()} className="chatbot-close-btn" title="Upload Resume">
+                                <button onClick={() => resumeInputRef.current?.click()} className="chatbot-close-btn" title="Upload Resume" aria-label="Upload Resume">
                                     <FileUp size={16} />
                                 </button>
-                                <button onClick={exportChat} className="chatbot-close-btn" title="Export Chat" disabled={messages.length === 0}>
+                                <button onClick={exportChat} className="chatbot-close-btn" title="Export Chat" aria-label="Export Chat" disabled={messages.length === 0}>
                                     <Download size={16} />
                                 </button>
-                                <button onClick={resetChat} className="chatbot-close-btn" title="New Chat">
+                                <button onClick={resetChat} className="chatbot-close-btn" title="New Chat" aria-label="New Chat">
                                     <RefreshCw size={16} />
                                 </button>
-                                <button onClick={toggleChat} className="chatbot-close-btn" title="Close">
+                                <button onClick={toggleChat} className="chatbot-close-btn" title="Close" aria-label="Close Chat">
                                     <X size={16} />
                                 </button>
                             </div>
@@ -1016,6 +1017,7 @@ ${messagesHtml}
                                     onClick={toggleListening}
                                     className={`chatbot-mic-btn ${isListening ? 'listening' : ''}`}
                                     title={isListening ? "Stop listening" : "Speak"}
+                                    aria-label={isListening ? "Stop listening" : "Start speaking"}
                                 >
                                     {isListening ? <MicOff size={16} /> : <Mic size={16} />}
                                 </button>
@@ -1027,7 +1029,7 @@ ${messagesHtml}
                                     onKeyPress={handleKeyPress}
                                     className="chatbot-input"
                                 />
-                                <button onClick={() => handleSendMessage()} className="chatbot-send-btn" title="Send">
+                                <button onClick={() => handleSendMessage()} className="chatbot-send-btn" title="Send" aria-label="Send message">
                                     <Send size={16} />
                                 </button>
                             </div>
@@ -1037,7 +1039,7 @@ ${messagesHtml}
                 )}
             </AnimatePresence>
 
-            <button onClick={toggleChat} className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`}>
+            <button onClick={toggleChat} className={`chatbot-toggle-btn ${isOpen ? 'open' : ''}`} aria-label={isOpen ? 'Close Chat' : 'Open Chat'}>
                 {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
             </button>
         </div>

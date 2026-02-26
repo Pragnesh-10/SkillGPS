@@ -53,6 +53,7 @@ const Header = () => {
                             <button
                                 onClick={toggleMenu}
                                 className="user-menu-btn"
+                                aria-label="User Menu"
                             >
                                 <User size={20} />
                             </button>

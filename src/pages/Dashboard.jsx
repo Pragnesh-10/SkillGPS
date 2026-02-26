@@ -107,7 +107,7 @@ const EnrolledModal = ({ isOpen, onClose, enrolledCourses, completedCourses, all
                     >
                         <div className="enrolled-modal-header">
                             <h2>Enrolled Courses</h2>
-                            <button className="enrolled-modal-close" onClick={onClose}>
+                            <button className="enrolled-modal-close" onClick={onClose} aria-label="Close modal">
                                 <X size={24} />
                             </button>
                         </div>
