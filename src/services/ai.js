@@ -25,7 +25,7 @@ export const generateAIResponse = async (prompt, provider = 'local') => {
 // Call the server-side ML inference API. Falls back to local rule-based engine if the API is unreachable.
 export const getCareerRecommendations = async (formData) => {
     // 1. Try Python ML API (if running)
-    const base = import.meta.env.VITE_ML_API_BASE || 'http://localhost:8000';
+    const base = import.meta.env.VITE_ML_API_BASE || '';
     try {
         const res = await fetch(`${base}/predict`, {
             method: 'POST',
