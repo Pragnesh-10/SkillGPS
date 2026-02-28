@@ -55,7 +55,7 @@ const Subscription = () => {
             </Helmet>
 
             <div className="subscription-header">
-                <h1>Invest in your Future</h1>
+                    <h1>Premium Career Mentorship with SkillGPS</h1>
                 <p>Unlock the full potential of your career with personalized guidance.</p>
             </div>
 
