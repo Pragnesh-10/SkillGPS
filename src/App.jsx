@@ -2,6 +2,7 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/common/Header';
 import Chatbot from './components/common/Chatbot';
+import InstallBanner from './components/common/InstallBanner'; // ← NEW
 import { useCodeProtection } from './hooks/useCodeProtection';
 
 const Welcome = lazy(() => import('./pages/Welcome'));
@@ -55,6 +56,7 @@ function App() {
         </Suspense>
       </main>
       <Chatbot />
+      <InstallBanner /> {/* ← NEW: Shows "Install App" banner on mobile */}
     </Router>
   );
 }
