@@ -1,99 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- SEO Sitemap for SkillGPS Vercel Deployment -->
   <url>
     <loc>https://skillgps.vercel.app/</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/survey</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/results</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/dashboard</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/progress</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/experts</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/subscription</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/data-scientist</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/backend-developer</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/ai-ml-engineer</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/ui-ux-designer</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/product-manager</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/cybersecurity-analyst</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/cloud-engineer</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/business-analyst</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://skillgps.vercel.app/careers/data-analyst</loc>
-    <lastmod>2024-05-24</lastmod>
+    <lastmod>2026-02-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
