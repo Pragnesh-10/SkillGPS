@@ -136,45 +136,79 @@ const Results = () => {
                     visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
                 }}
             >
-                {domains.map((d, index) => (
-                    <motion.div
-                        key={d.career}
-                        className={`card career-card ${index === 0 && !isSkipSurvey ? 'best-match' : ''}`}
-                        variants={{
-                            hidden: { opacity: 0, y: 30, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 28, mass: 0.8 } }
-                        }}
-                        whileHover={{ y: -8, scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}
-                    >
-                        <div className="career-card-accent" />
+                {domains.map((d, index) => {
+                    const meta = d.metadata || {};
+                    return (
+                        <motion.div
+                            key={d.career}
+                            className={`card career-card ${index === 0 && !isSkipSurvey ? 'best-match' : ''}`}
+                            variants={{
+                                hidden: { opacity: 0, y: 30, scale: 0.95 },
+                                visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 28, mass: 0.8 } }
+                            }}
+                            whileHover={{ y: -8, scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}
+                        >
+                            <div className="career-card-accent" />
 
-                        <h3>{d.career}</h3>
-                        <p className="career-card-desc">
-                            {d.career === 'UI/UX Designer' ? 'Design intuitive interfaces and craft seamless user experiences.' :
-                                d.career === 'Data Scientist' ? 'Analyze complex data sets to solve business problems using ML.' :
-                                    d.career === 'Backend Developer' ? 'Build robust server-side applications and scalable APIs.' :
-                                        'A great career path matching your logical and analytical skills.'}
-                        </p>
-
-                        <div className="career-card-footer">
-                            <motion.button
-                                className="btn-primary"
-                                onClick={() => handleDomainSelect(d.career)}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                Start Learning Path
-                            </motion.button>
-                            {!isSkipSurvey && <span className="career-card-match">{Math.round((d.prob || 1) * 100)}% match</span>}
-                        </div>
-
-                        {index === 0 && !isSkipSurvey && (
-                            <div className="best-match-badge">
-                                <CheckCircle size={12} /> BEST MATCH
+                            <div className="career-card-title-row">
+                                {meta.icon && <span className="career-card-icon">{meta.icon}</span>}
+                                <h3>{d.career}</h3>
                             </div>
-                        )}
-                    </motion.div>
-                ))}
+
+                            <p className="career-card-desc">
+                                {meta.description || 'A great career path matching your skills and interests.'}
+                            </p>
+
+                            {/* Salary & Growth Badges */}
+                            {meta.salaryRange && (
+                                <div className="career-card-badges">
+                                    <span className="career-badge career-badge-salary">
+                                        💰 {meta.salaryRange.entry} – {meta.salaryRange.senior}
+                                    </span>
+                                    {meta.growthOutlook && (
+                                        <span className={`career-badge career-badge-growth career-badge-growth-${meta.growthOutlook.toLowerCase().replace(' ', '-')}`}>
+                                            📈 {meta.growthOutlook} Growth
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Key Strengths */}
+                            {meta.keyStrengths && meta.keyStrengths.length > 0 && (
+                                <div className="career-card-strengths">
+                                    {meta.keyStrengths.map(s => (
+                                        <span key={s} className="strength-tag">{s}</span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Match Explanation */}
+                            {!isSkipSurvey && d.explanation && (
+                                <p className="career-card-explanation">
+                                    💡 {d.explanation}
+                                </p>
+                            )}
+
+                            <div className="career-card-footer">
+                                <motion.button
+                                    className="btn-primary"
+                                    onClick={() => handleDomainSelect(d.career)}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    Start Learning Path
+                                </motion.button>
+                                {!isSkipSurvey && <span className="career-card-match">{Math.round((d.prob || 1) * 100)}% match</span>}
+                            </div>
+
+                            {index === 0 && !isSkipSurvey && (
+                                <div className="best-match-badge">
+                                    <CheckCircle size={12} /> BEST MATCH
+                                </div>
+                            )}
+                        </motion.div>
+                    );
+                })}
             </motion.div>
 
             {/* Resume Upload Section */}
