@@ -187,7 +187,7 @@ const Chatbot = () => {
                 `Roadmap for ${lastDomain}`,
                 `Recommend courses for ${lastDomain}`,
                 `Project ideas for ${lastDomain}`,
-                `Interview questions for ${lastDomain}`
+                `AI Mock Interview for ${lastDomain}`
             ];
             // If they have a resume uploaded, suggest comparing it
             if (resumeText) {
@@ -713,9 +713,64 @@ const Chatbot = () => {
 
                     response += `\ud83d\udca1 *Want courses or a roadmap for your top match? Just ask!*`;
                     addBotMessage(response);
+                    addBotMessage(response);
                     setInteractionMode('normal');
                     setIsTyping(false);
                 }, 800);
+                return;
+            }
+
+            // --- AI MOCK INTERVIEW MODE ---
+            if (interactionMode === 'ai_mock_interview' && currentContext.domain) {
+                if (text.toLowerCase() === 'end interview') {
+                    addBotMessage(`Interview ended. Great job practicing! Let me know if you want to explore anything else.`);
+                    setInteractionMode('normal');
+                    setCurrentContext({ domain: null, questionIndex: null });
+                    setIsTyping(false);
+                    return;
+                }
+
+                if (!aiMode || !modelReady) {
+                    addBotMessage(`⚠️ The interactive mock interview requires the AI Engine to be active. Please click the ⚡️ button above to enable it, then we can start!`);
+                    setInteractionMode('normal');
+                    setIsTyping(false);
+                    return;
+                }
+
+                const streamId = Date.now().toString();
+                setMessages(prev => [...prev, { id: streamId, text: '', sender: 'bot', streaming: true }]);
+
+                try {
+                    const newHistory = [...aiChatHistory, { role: 'user', content: text }];
+
+                    const fullResponse = await generateInterviewResponse(
+                        text,
+                        aiChatHistory,
+                        currentContext.domain,
+                        (partialText) => {
+                            setMessages(prev => prev.map(m =>
+                                m.id === streamId ? { ...m, text: partialText } : m
+                            ));
+                        },
+                        controller.signal
+                    );
+
+                    setMessages(prev => prev.map(m =>
+                        m.id === streamId ? { ...m, streaming: false } : m
+                    ));
+
+                    setAiChatHistory([...newHistory, { role: 'assistant', content: fullResponse }]);
+                    setStreamingMessage(null);
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        setMessages(prev => prev.map(m =>
+                            m.id === streamId ? { ...m, text: "Sorry, the interview engine encountered an error.", streaming: false } : m
+                        ));
+                    }
+                } finally {
+                    setIsTyping(false);
+                    abortControllerRef.current = null;
+                }
                 return;
             }
 
@@ -797,15 +852,25 @@ const Chatbot = () => {
 
                 // Check if brain wants to trigger interview mode
                 if (response === '__TRIGGER_INTERVIEW_MODE__') {
-                    const savedDomains = localStorage.getItem('suggestedDomains');
-                    let domains = [];
-                    if (savedDomains) {
-                        try { domains = JSON.parse(savedDomains).map(d => d.career); } catch (e) { /* ignore */ }
-                    }
-                    if (domains.length === 0) domains = Object.keys(interviewQuestions);
+                    if (!aiMode) {
+                        // Fallback to legacy static interview if AI mode is off
+                        const savedDomains = localStorage.getItem('suggestedDomains');
+                        let domains = [];
+                        if (savedDomains) {
+                            try { domains = JSON.parse(savedDomains).map(d => d.career); } catch (e) { /* ignore */ }
+                        }
+                        if (domains.length === 0) domains = Object.keys(interviewQuestions);
 
-                    addBotMessage("Let's practice some interview questions! 🎤\n\nWhich domain would you like?\n\n" + domains.map(d => `• ${d}`).join('\n'));
-                    setInteractionMode('selecting_domain');
+                        addBotMessage("Let's practice some interview questions! 🎤\n\nWhich domain would you like?\n\n" + domains.map(d => `• ${d}`).join('\n'));
+                        setInteractionMode('selecting_domain');
+                    } else {
+                        // Trigger new LLM Mock Interview
+                        const domain = lastDomain || Object.keys(interviewQuestions)[0];
+                        setInteractionMode('ai_mock_interview');
+                        setCurrentContext({ domain });
+                        setAiChatHistory([]); // Clear past history for the interview
+                        addBotMessage(`Great! I'll be your technical interviewer for **${domain}** today. I'm going to ask you a question, and I'll evaluate your answer before moving to the next one.\n\nType **"end interview"** at any time to stop.\n\nLet's begin! Please tell me about yourself and your background with ${domain}.`);
+                    }
                 } else if (response === '__TRIGGER_GITHUB_ANALYSIS__') {
                     addBotMessage("I'd love to analyze your GitHub portfolio! 🐙\n\nPlease paste your **GitHub username** or **profile URL** below:\n\n*Example: `octocat` or `https://github.com/octocat`*");
                     setInteractionMode('github_waiting');

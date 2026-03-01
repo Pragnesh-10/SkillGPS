@@ -34,6 +34,18 @@ You have deep knowledge of:
 - Career roadmaps and learning paths
 - Industry tools and frameworks`;
 
+const INTERVIEW_SYSTEM_PROMPT = `You are a Technical Interviewer for the SkillGPS application.
+You are conducting a strict but fair mock interview.
+Your goal is to assess the candidate's skills, provide constructive feedback, and ask follow-up questions.
+
+Rules:
+1. ALWAYS start by evaluating the user's previous answer (if there is one). Be brief but specific about what they got right or wrong.
+2. After evaluating, ALWAYS ask ONE new technical interview question related to their chosen domain.
+3. Keep the entire response under 150 words.
+4. If the user asks for the answer or says they don't know, provide a concise explanation and move on to a new question.
+5. If the user types 'end interview' or wants to stop, offer a brief concluding remark summarizing their performance.
+6. Use professional, encouraging language.`;
+
 // ─── State ───────────────────────────────────────────────────────────
 let engine = null;
 let isLoading = false;
@@ -154,6 +166,56 @@ export const generateResponse = async (userMessage, chatHistory = [], onToken = 
     } catch (err) {
         if (err.name === 'AbortError' || signal?.aborted) {
             return fullResponse; // Return whatever we generated so far
+        }
+        throw err;
+    }
+
+    return fullResponse;
+};
+
+// ─── Generate Interview Response ────────────────────────────────────
+/**
+ * Generate a response specifically for the interactive AI Mock Interview mode.
+ * @param {string} userMessage - The user's answer
+ * @param {Array} chatHistory - Previous messages
+ * @param {string} domain - The career domain being interviewed for
+ * @param {Function} onToken - Streaming callback
+ * @param {AbortSignal} signal - Abort signal
+ */
+export const generateInterviewResponse = async (userMessage, chatHistory = [], domain, onToken = () => { }, signal = null) => {
+    if (!engine) throw new Error('Model not loaded');
+
+    const dynamicInterviewPrompt = `${INTERVIEW_SYSTEM_PROMPT}\n\nThe candidate is interviewing for a ${domain} position. Ask questions appropriate for this role.`;
+
+    const messages = [
+        { role: 'system', content: dynamicInterviewPrompt },
+        ...chatHistory.slice(-8), // Keep a longer context for interviews
+        { role: 'user', content: userMessage },
+    ];
+
+    let fullResponse = '';
+
+    try {
+        const asyncGenerator = await engine.chat.completions.create({
+            messages,
+            temperature: 0.7,
+            max_tokens: 400,
+            top_p: 0.9,
+            stream: true,
+        });
+
+        for await (const chunk of asyncGenerator) {
+            if (signal?.aborted) break;
+
+            const delta = chunk.choices[0]?.delta?.content || '';
+            if (delta) {
+                fullResponse += delta;
+                onToken(fullResponse);
+            }
+        }
+    } catch (err) {
+        if (err.name === 'AbortError' || signal?.aborted) {
+            return fullResponse;
         }
         throw err;
     }

@@ -16,6 +16,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/__tests__/setup.js',
+    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'src/__e2e__/**'],
   },
   build: {
     // Disable source maps in production to hide original code
