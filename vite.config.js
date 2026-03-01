@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import javascriptObfuscator from 'vite-plugin-javascript-obfuscator'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,16 +10,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    react(),
-    javascriptObfuscator({
-      rotateStringArray: true,
-      stringArray: true,
-      identifierNamesGenerator: 'hexadecimal'
-    }, {
-      include: ['src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx'],
-      exclude: [/node_modules/],
-      apply: 'build'
-    })
+    react()
   ],
   test: {
     environment: 'jsdom',
