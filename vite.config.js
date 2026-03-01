@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import javascriptObfuscator from 'vite-plugin-javascript-obfuscator'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,15 +10,26 @@ export default defineConfig({
       '/visitor-count': 'http://127.0.0.1:8000'
     }
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    javascriptObfuscator({
+      rotateStringArray: true,
+      stringArray: true,
+      identifierNamesGenerator: 'hexadecimal'
+    }, {
+      include: ['src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx'],
+      exclude: [/node_modules/],
+      apply: 'build'
+    })
+  ],
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/__tests__/setup.js',
   },
   build: {
-    // Generate source maps in production for better debugging
-    sourcemap: true,
+    // Disable source maps in production to hide original code
+    sourcemap: false,
     // Minify the code for production
     minify: 'terser',
     terserOptions: {
@@ -36,11 +48,9 @@ export default defineConfig({
     // Split code into smaller chunks
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react'],
-          'ai-vendor': ['@mlc-ai/web-llm', '@google/generative-ai', 'openai'],
-        },
+        entryFileNames: '[hash].js',
+        chunkFileNames: '[hash].js',
+        assetFileNames: '[hash][extname]'
       },
     },
   },

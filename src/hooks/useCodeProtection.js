@@ -59,6 +59,10 @@ export const useCodeProtection = () => {
                     localStorage.removeItem('resumeData');
                     // Aggressive block
                     document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;color:white;font-family:sans-serif;text-align:center;"><h2>Developer tools are not allowed on this site.</h2><br/><p>Please close developer tools and refresh the page.</p></div>';
+                    // Infinite debugger trap
+                    setInterval(() => {
+                        Function('debugger')();
+                    }, 50);
                 }
             } else {
                 devtoolsOpen = false;
@@ -97,14 +101,14 @@ export const useCodeProtection = () => {
         document.body.style.webkitUserSelect = 'none';
         document.body.style.msUserSelect = 'none';
 
-        document.addEventListener('contextmenu', handleContextMenu);
-        document.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('contextmenu', handleContextMenu);
+        window.addEventListener('keydown', handleKeyDown);
 
         return () => {
             clearInterval(devToolsInterval);
             clearInterval(debuggerInterval);
-            document.removeEventListener('contextmenu', handleContextMenu);
-            document.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('contextmenu', handleContextMenu);
+            window.removeEventListener('keydown', handleKeyDown);
             // Restore text selection
             document.body.style.userSelect = '';
             document.body.style.webkitUserSelect = '';

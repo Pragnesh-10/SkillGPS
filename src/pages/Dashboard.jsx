@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { courses } from '../data/courses';
 import { PlayCircle, Clock, Star, CheckCircle, Circle, X, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { matchSkills } from '../services/skillsMatcher';
 import './Dashboard.css';
@@ -259,6 +260,10 @@ const Dashboard = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
+            <Helmet>
+                <title>Dashboard | SkillGPS</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Helmet>
             <div className="page-header">
                 <motion.h1
                     initial={{ y: -20, opacity: 0 }}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import { CheckCircle, Loader } from 'lucide-react';
 import { getCareerRecommendations } from '../services/ai';
 import { getAllDomains } from '../data/courses';
@@ -101,6 +102,11 @@ const Results = () => {
 
     return (
         <div className="container results-container">
+            <Helmet>
+                <title>Your Career Matches | SkillGPS</title>
+                <meta name="description" content="Discover your personalized career matches and learning paths based on your skills and interests." />
+                <link rel="canonical" href="https://skillgps.vercel.app/results" />
+            </Helmet>
             <div className="results-header">
                 <motion.h1
                     initial={{ y: -20, opacity: 0 }}

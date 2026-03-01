@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { courses } from '../data/courses';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import './Progress.css';
 
@@ -95,6 +96,10 @@ const Progress = () => {
             initial="hidden"
             animate="visible"
         >
+            <Helmet>
+                <title>Your Progress | SkillGPS</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Helmet>
             <div className="page-header">
                 <motion.h1 variants={itemVariants}>
                     Your Progress
