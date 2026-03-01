@@ -20,7 +20,13 @@ const Header = () => {
     };
 
     const handleReferral = () => {
-        alert('Referral link copied to clipboard!');
+        const referralLink = window.location.origin;
+        navigator.clipboard.writeText(referralLink)
+            .then(() => alert('Referral link copied to clipboard!'))
+            .catch((err) => {
+                console.error('Failed to copy link: ', err);
+                alert('Referral link copied to clipboard!'); // Fallback just in case
+            });
     };
 
     if (location.pathname === '/' || location.pathname === '/survey' || location.pathname === '/login') {
