@@ -958,7 +958,7 @@ const Chatbot = () => {
   ul,ol{padding-left:20px;margin:6px 0}
   .footer{text-align:center;margin-top:40px;color:#999;font-size:12px;border-top:1px solid #eee;padding-top:16px}
 </style></head><body>
-<h1>🧭 SkillGPS — Chat Export</h1>
+<h1>SkillGPS — Chat Export</h1>
 <div class="meta">Exported on ${dateStr} at ${timeStr}</div>
 ${messagesHtml}
 <div class="footer">Exported from SkillGPS AI Navigator — skillgps.vercel.app</div>
@@ -1058,18 +1058,18 @@ ${messagesHtml}
                         {/* Messages or Welcome */}
                         {messages.length === 0 ? (
                             <div className="chatbot-welcome">
-                                <div className="welcome-icon">
+                                <div className="chatbot-welcome-icon">
                                     <Cpu size={28} />
                                 </div>
-                                <div className="welcome-title">SkillGPS Navigator</div>
-                                <div className="welcome-subtitle">
+                                <div className="chatbot-welcome-title">SkillGPS Navigator</div>
+                                <div className="chatbot-welcome-subtitle">
                                     Your AI-powered career guide. Ask about skills, courses, projects, roadmaps, salaries, and more.
                                 </div>
-                                <div className="welcome-suggestions">
+                                <div className="chatbot-welcome-suggestions">
                                     {welcomeSuggestions.map((s, i) => (
                                         <button
                                             key={i}
-                                            className="welcome-suggestion-btn"
+                                            className="chatbot-suggestion-btn"
                                             onClick={() => handleSendMessage(s.text)}
                                         >
                                             <span className="suggestion-icon">{s.icon}</span>

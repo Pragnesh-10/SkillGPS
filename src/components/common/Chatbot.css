@@ -444,7 +444,7 @@
 }
 
 /* ─── Welcome Screen ──────────────────────────────────────────── */
-.welcome-screen {
+.chatbot-welcome {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -454,7 +454,7 @@
     padding: 40px 20px;
 }
 
-.welcome-icon-container {
+.chatbot-welcome-icon {
     width: 64px;
     height: 64px;
     border-radius: 50%;
@@ -465,32 +465,32 @@
     margin-bottom: 20px;
 }
 
-.welcome-icon-container svg {
+.chatbot-welcome-icon svg {
     color: var(--primary);
 }
 
-.welcome-title {
+.chatbot-welcome-title {
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 8px;
     letter-spacing: -0.02em;
 }
 
-.welcome-subtitle {
+.chatbot-welcome-subtitle {
     font-size: 14px;
     color: var(--text-muted);
     margin-bottom: 32px;
     line-height: 1.5;
 }
 
-.welcome-suggestions {
+.chatbot-welcome-suggestions {
     display: flex;
     flex-direction: column;
     gap: 8px;
     width: 100%;
 }
 
-.welcome-suggestion-btn {
+.chatbot-suggestion-btn {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 12px;
@@ -505,6 +505,6 @@
     align-items: center;
 }
 
-.welcome-suggestion-btn:hover {
+.chatbot-suggestion-btn:hover {
     background: rgba(255, 255, 255, 0.08);
 }

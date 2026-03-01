@@ -6,7 +6,6 @@ import { ArrowRight, Zap } from 'lucide-react';
 import SurveyChoiceModal from '../components/common/SurveyChoiceModal';
 import './Welcome.css';
 
-import VisitorCounter from '../components/common/VisitorCounter';
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -85,7 +84,6 @@ const Welcome = () => {
         </motion.div>
       </div>
 
-      <VisitorCounter />
 
       <SurveyChoiceModal
         isOpen={showChoiceModal}

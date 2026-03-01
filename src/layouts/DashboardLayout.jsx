@@ -1,6 +1,5 @@
 import { useNavigate, Outlet } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import VisitorCounter from '../components/common/VisitorCounter';
 import './DashboardLayout.css';
 
 const DashboardLayout = () => {
@@ -19,7 +18,6 @@ const DashboardLayout = () => {
                 <div>
                     <Outlet />
                 </div>
-                <VisitorCounter />
             </main>
         </div>
     );

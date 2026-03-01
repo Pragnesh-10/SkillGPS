@@ -611,15 +611,6 @@ button {
   font-size: var(--text-xl);
 }
 
-/* ─── Visitor Counter ──────────────────────────────────────────── */
-.visitor-counter {
-  text-align: center;
-  padding: var(--space-4);
-  margin-top: var(--space-5);
-  color: var(--text-faint);
-  font-size: var(--text-xs);
-  letter-spacing: 0.02em;
-}
 
 /* ─── Background Glow — subtle ─────────────────────────────────── */
 .bg-glow {
