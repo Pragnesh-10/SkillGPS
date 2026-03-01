@@ -297,6 +297,24 @@
     background: rgba(255, 255, 255, 0.12);
 }
 
+.quick-reply-btn {
+    white-space: nowrap;
+    background: rgba(41, 151, 255, 0.1);
+    border: 1px solid rgba(41, 151, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.quick-reply-btn:hover {
+    background: rgba(41, 151, 255, 0.2);
+    transform: translateY(-1px);
+}
+
 /* ─── Input Area ──────────────────────────────────────────────── */
 .chatbot-input-area {
     padding: 12px 20px 20px;

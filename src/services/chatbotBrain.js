@@ -235,6 +235,26 @@ const INTENTS = [
         priority: 2,
     },
     {
+        name: 'salary_negotiation',
+        patterns: ['negotiate', 'negotiation', 'ask for raise', 'salary talk', 'offer', 'counter offer', 'how to ask for more money', 'salary expectation', 'discuss salary', 'salary negotiation tips'],
+        sentencePatterns: [
+            /\bhow\s+to\s+(negotiate|ask\s+for)\s+(salary|a\s+raise|more\s+money)\b/i,
+            /\b(salary|offer)\s+(negotiation|talks?)\b/i,
+            /\bwhat\s+(should|to)\s+say\s+when\s+asked\s+about\s+salary\b/i,
+        ],
+        priority: 3,
+    },
+    {
+        name: 'resume_tips',
+        patterns: ['resume', 'cv', 'cover letter', 'curriculum vitae', 'resume tips', 'build resume', 'write resume', 'improve resume', 'ats', 'ats friendly', 'resume format', 'resume template', 'what to put on resume'],
+        sentencePatterns: [
+            /\bhow\s+to\s+(write|build|create|improve|make|format)\s+(a\s+)?(resume|cv)\b/i,
+            /\b(resume|cv)\s+(tips?|advice|help|format|builder)\b/i,
+            /\bwhat\s+to\s+(put|include)\s+(in|on)\s+(a\s+)?(resume|cv)\b/i,
+        ],
+        priority: 3,
+    },
+    {
         name: 'about_bot',
         patterns: ['who are you', 'what can you do', 'what are you', 'your name', 'about you',
             'capabilities', 'features', 'how do you work', 'what is skillgps', 'what do you do',
@@ -695,6 +715,14 @@ const motivationResponses = [
 
 const aboutBotResponses = [
     "I'm **SkillGPS Navigator** — a fully self-contained AI career assistant! 🤖\n\nI was built right into this application with deep knowledge about:\n\n• **9 career domains** with detailed skill trees\n• **200+ curated courses** (free & paid)\n• **80+ project ideas** across all levels\n• **250+ interview questions** with answers\n• **Career roadmaps** from beginner to advanced\n\nI don't need any internet connection to help you — my brain is built into the app! Try asking me about any career path.",
+];
+
+const salaryNegotiationResponses = [
+    "## 💰 Salary Negotiation Masterclass\n\nNegotiating your salary is crucial. Here's a proven framework:\n\n**1. Never give a number first.**\nIf asked, *\"What are your salary expectations?\"* say:\n> *\"Right now, I'm focused on finding the right fit for my career. Could you share the budget for this role?\"*\n\n**2. Do your research.**\nUse resources like Glassdoor, AmbitionBox, or Levels.fyi to know the market rate for the role and city.\n\n**3. The Counter-Offer Script:**\n> *\"I'm thrilled about the offer and excited to join! Based on my research and the value I can bring with my background in [Skill], I was hoping we could explore a base salary around [X + 10-15%]. Is there any flexibility here?\"*\n\n**Remember:** Companies expect you to negotiate. The worst they usually say is \"No, this is our best offer.\"",
+];
+
+const resumeTipsResponses = [
+    "## 📄 The Perfect Tech Resume\n\nTo pass the ATS (Applicant Tracking System) and impress recruiters, keep it simple:\n\n**1. Format (The 1-Column Rule):**\nAvoid fancy 2-column designs with progress bars. Use a clean, single-column layout. Keep it to **1 page** unless you have 7+ years of experience.\n\n**2. The Order of Sections:**\n• Contact Info + LinkedIn + GitHub\n• Skills (comma separated lists)\n• Experience (reverse chronological)\n• Projects (crucial for beginners!)\n• Education\n\n**3. Bullet Points (The XYZ Formula):**\nDon't just list what you did. Use the Google XYZ formula:\n*\"Accomplished [X] as measured by [Y], by doing [Z].\"*\n> *Bad: \"Built a database.\"*\n> *Good: \"Reduced query latency by 40% (X) resulting in 2-second load times (Y) by implementing Redis caching (Z).\"*\n\n💡 *Did you know? You can use the 📎 button to upload your resume and I will analyze it for you!*",
 ];
 
 const generateCourseResponse = (domain, level) => {
@@ -1328,6 +1356,12 @@ export const processMessage = (userMessage, context = {}) => {
 
         case 'motivation':
             return pickRandom(motivationResponses);
+
+        case 'salary_negotiation':
+            return pickRandom(salaryNegotiationResponses);
+
+        case 'resume_tips':
+            return pickRandom(resumeTipsResponses);
 
         case 'course_recommendation':
             if (effectiveDomain) {

@@ -2,6 +2,7 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { vi, test, expect } from 'vitest'
+import { HelmetProvider } from 'react-helmet-async'
 import Results from '../pages/Results'
 import * as ai from '../services/ai'
 
@@ -9,6 +10,13 @@ vi.spyOn(ai, 'getCareerRecommendations').mockResolvedValue([
   { career: 'Data Scientist', prob: 0.9 },
   { career: 'Backend Developer', prob: 0.6 }
 ])
+
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() { }
+  disconnect() { }
+  observe() { }
+  unobserve() { }
+}
 
 const formData = {
   interests: { numbers: true, building: true, design: false, explaining: false, logic: true },
@@ -19,11 +27,13 @@ const formData = {
 
 test('Results shows predicted careers', async () => {
   render(
-    <MemoryRouter initialEntries={[{ pathname: '/results', state: { formData } }]}>
-      <Routes>
-        <Route path="/results" element={<Results />} />
-      </Routes>
-    </MemoryRouter>
+    <HelmetProvider>
+      <MemoryRouter initialEntries={[{ pathname: '/results', state: { formData } }]}>
+        <Routes>
+          <Route path="/results" element={<Results />} />
+        </Routes>
+      </MemoryRouter>
+    </HelmetProvider>
   )
 
   expect(screen.getByText(/Analyzing your profile/i)).toBeInTheDocument()

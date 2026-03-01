@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageCircle, X, Send, Sparkles, Cpu, Zap,
     RefreshCw, Mic, MicOff, Volume2, VolumeX, FileUp,
-    Github, Calendar, Briefcase, Linkedin, Download, Loader
+    Github, Calendar, Briefcase, Linkedin, Download, Loader,
+    ChevronUp
 } from 'lucide-react';
 import './Chatbot.css';
 import { interviewQuestions } from '../../data/interviewQuestions';
@@ -113,6 +114,7 @@ const Chatbot = () => {
     //                    'career_advisor', 'github_waiting', 'linkedin_waiting'
     const [interactionMode, setInteractionMode] = useState('normal');
     const [currentContext, setCurrentContext] = useState({ domain: null, questionIndex: null });
+    const [quickReplies, setQuickReplies] = useState([]);
 
     // AI Mode State (WebLLM)
     const [aiMode, setAiMode] = useState(false);
@@ -129,7 +131,81 @@ const Chatbot = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    useEffect(() => { scrollToBottom(); }, [messages, isTyping]);
+    useEffect(() => { scrollToBottom(); }, [messages, isTyping, quickReplies]);
+
+    // ─── Local Storage Persistence ───────────────────────────────
+    useEffect(() => {
+        const savedMessages = localStorage.getItem('skillgps_chat_messages');
+        const savedAiMode = localStorage.getItem('skillgps_chat_aimode');
+        const savedDomain = localStorage.getItem('skillgps_chat_lastdomain');
+        const savedResume = sessionStorage.getItem('skillgps_resume_text'); // keep resume in session
+
+        if (savedMessages) {
+            try {
+                const parsed = JSON.parse(savedMessages);
+                if (parsed.length > 0) setMessages(parsed);
+            } catch (e) {
+                console.error("Failed to parse chat history");
+            }
+        }
+        if (savedAiMode === 'true') {
+            // we don't auto-start WebLLM to save battery, but we remember the intent
+            // user needs to click the brain again to actually load it
+        }
+        if (savedDomain) setLastDomain(savedDomain);
+        if (savedResume) setResumeText(savedResume);
+    }, []);
+
+    useEffect(() => {
+        if (messages.length > 0) {
+            // Only save non-streaming messages to avoid corruption
+            const stableMessages = messages.filter(m => !m.streaming);
+            localStorage.setItem('skillgps_chat_messages', JSON.stringify(stableMessages));
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        if (lastDomain) localStorage.setItem('skillgps_chat_lastdomain', lastDomain);
+    }, [lastDomain]);
+
+    // ─── Dynamic Quick Replies ───────────────────────────────────
+    useEffect(() => {
+        if (isTyping || interactionMode !== 'normal') {
+            setQuickReplies([]);
+            return;
+        }
+
+        const baseReplies = [
+            "Help me choose a career",
+            "Resume Builder Tips",
+            "Salary negotiation"
+        ];
+
+        let replies = [];
+        if (lastDomain) {
+            replies = [
+                `Roadmap for ${lastDomain}`,
+                `Recommend courses for ${lastDomain}`,
+                `Project ideas for ${lastDomain}`,
+                `Interview questions for ${lastDomain}`
+            ];
+            // If they have a resume uploaded, suggest comparing it
+            if (resumeText) {
+                replies.push(`Analyze my resume for ${lastDomain}`);
+            }
+        } else if (resumeText) {
+            replies = [
+                "Based on my resume, what should I learn?",
+                "Suggest projects for my resume",
+            ];
+        } else {
+            replies = baseReplies;
+        }
+
+        // Shuffle and pick 3
+        const shuffled = replies.sort(() => 0.5 - Math.random());
+        setQuickReplies(shuffled.slice(0, 3));
+    }, [messages, lastDomain, resumeText, isTyping, interactionMode]);
 
     // ─── Document parsers ────────────────────────────────────────
     const loadPdfJs = async () => {
@@ -252,6 +328,11 @@ const Chatbot = () => {
         resetContext(); // Clear NLP conversation memory
         setAiChatHistory([]);
         setStreamingMessage(null);
+
+        localStorage.removeItem('skillgps_chat_messages');
+        localStorage.removeItem('skillgps_chat_lastdomain');
+        sessionStorage.removeItem('skillgps_resume_text');
+
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             abortControllerRef.current = null;
@@ -356,6 +437,7 @@ const Chatbot = () => {
             if (!content?.trim()) { addBotMessage('Sorry, that file seems empty. Please try another one.'); resetInput(); return; }
 
             setResumeText(content);
+            sessionStorage.setItem('skillgps_resume_text', content);
             addBotMessage('✅ Resume uploaded successfully! Analyzing your profile...');
 
             setTimeout(() => {
@@ -663,6 +745,19 @@ const Chatbot = () => {
                 try {
                     const newHistory = [...aiChatHistory, { role: 'user', content: text }];
 
+                    // Prepare RAG Context
+                    let contextData = { currentDomain: lastDomain || detectedDomain };
+                    if (resumeText) {
+                        try {
+                            const parsedAnalysis = analyzeResume(resumeText);
+                            contextData.resumeSkills = Object.values(parsedAnalysis.skills).flat();
+                            contextData.experience = parsedAnalysis.experience;
+                            contextData.recommendedDomains = parsedAnalysis.recommendations;
+                        } catch (e) {
+                            // ignore parse errors for context
+                        }
+                    }
+
                     const fullResponse = await generateResponse(
                         text,
                         aiChatHistory,
@@ -672,7 +767,8 @@ const Chatbot = () => {
                                 m.id === streamId ? { ...m, text: partialText } : m
                             ));
                         },
-                        controller.signal
+                        controller.signal,
+                        contextData
                     );
 
                     // Finalize the message (remove streaming flag)
@@ -1007,6 +1103,24 @@ ${messagesHtml}
                             <div className="chatbot-quick-actions">
                                 <button className="quick-action-btn" onClick={() => handleSendMessage("Yes, next question")}>✅ Next Question</button>
                                 <button className="quick-action-btn" onClick={() => handleSendMessage("No, thanks")}>❌ Done</button>
+                            </div>
+                        )}
+
+                        {/* Quick Replies */}
+                        {quickReplies.length > 0 && (
+                            <div className="quick-actions-container">
+                                <div className="quick-actions">
+                                    {quickReplies.map((reply, idx) => (
+                                        <button
+                                            key={idx}
+                                            className="quick-reply-btn"
+                                            onClick={() => handleSendMessage(reply)}
+                                            disabled={isTyping}
+                                        >
+                                            {reply}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
 

@@ -100,14 +100,33 @@ export const initEngine = async (onProgress = () => { }) => {
  * @param {Array} chatHistory - Previous messages [{role, content}, ...]
  * @param {Function} onToken - Called with each new token as it streams
  * @param {AbortSignal} signal - Optional abort signal to cancel generation
+ * @param {Object} contextData - Context to inject (e.g., { resumeSkills: [...], recommendedDomains: [...] })
  * @returns {Promise<string>} - The complete generated response
  */
-export const generateResponse = async (userMessage, chatHistory = [], onToken = () => { }, signal = null) => {
+export const generateResponse = async (userMessage, chatHistory = [], onToken = () => { }, signal = null, contextData = {}) => {
     if (!engine) throw new Error('Model not loaded');
 
-    // Build messages array with system prompt
+    // Build dynamic system prompt with RAG context
+    let dynamicSystemPrompt = SYSTEM_PROMPT;
+
+    // Inject parsed resume data if available
+    if (contextData?.resumeSkills?.length) {
+        dynamicSystemPrompt += `\n\nUSER CONTEXT:\nThe user has uploaded their resume. They have the following technical skills: ${contextData.resumeSkills.join(', ')}.`;
+        if (contextData?.experience) {
+            dynamicSystemPrompt += ` They have approximately ${contextData.experience} years of experience.`;
+        }
+        if (contextData?.recommendedDomains?.length) {
+            dynamicSystemPrompt += ` Based on their skills, we recommend these career paths: ${contextData.recommendedDomains.join(', ')}. Use this context directly when giving personalized advice.`;
+        }
+    }
+
+    if (contextData?.currentDomain) {
+        dynamicSystemPrompt += `\n\nThe user is currently asking about the ${contextData.currentDomain} career path. Focus your advice specifically on this domain unless they say otherwise.`;
+    }
+
+    // Build messages array
     const messages = [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: dynamicSystemPrompt },
         ...chatHistory.slice(-6), // Keep last 6 messages for context (3 turns)
         { role: 'user', content: userMessage },
     ];
