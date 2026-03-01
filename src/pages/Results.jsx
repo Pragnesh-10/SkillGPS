@@ -109,15 +109,15 @@ const Results = () => {
             </Helmet>
             <div className="results-header">
                 <motion.h1
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                    initial={{ y: -30, opacity: 0, filter: 'blur(10px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
                     transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
                 >
                     {isSkipSurvey ? 'Explore All Career Paths' : 'Your Perfect Career Matches'}
                 </motion.h1>
                 <motion.p
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                    initial={{ y: -20, opacity: 0, filter: 'blur(5px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 25, mass: 1 }}
                 >
                     {isSkipSurvey
@@ -128,18 +128,23 @@ const Results = () => {
 
             <motion.div
                 className="results-grid"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.15 }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+                }}
             >
                 {domains.map((d, index) => (
                     <motion.div
                         key={d.career}
                         className={`card career-card ${index === 0 && !isSkipSurvey ? 'best-match' : ''}`}
-                        initial={{ opacity: 0, y: 30, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        whileHover={{ y: -4, scale: 1.01, boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}
-                        transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.8 }}
+                        variants={{
+                            hidden: { opacity: 0, y: 30, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 28, mass: 0.8 } }
+                        }}
+                        whileHover={{ y: -8, scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}
                     >
                         <div className="career-card-accent" />
 

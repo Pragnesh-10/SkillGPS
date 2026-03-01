@@ -71,7 +71,8 @@ const Section = ({ title, items, completedSet, onToggle, onStart }) => (
         style={{ marginBottom: '40px' }}
         variants={sectionVariants}
         initial="hidden"
-        animate="visible"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
     >
         <motion.h3 className="dashboard-level-title" variants={cardVariants}>
             {title}
@@ -258,7 +259,7 @@ const Dashboard = () => {
             className="container"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
         >
             <Helmet>
                 <title>Dashboard | SkillGPS</title>
@@ -266,16 +267,16 @@ const Dashboard = () => {
             </Helmet>
             <div className="page-header">
                 <motion.h1
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
+                    initial={{ y: -20, opacity: 0, filter: 'blur(10px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ delay: 0.2, duration: 0.6, ease: "backOut" }}
                 >
                     Your Learning Path: <span className="gradient-text">{selectedDomain}</span>
                 </motion.h1>
                 <motion.p
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
+                    initial={{ y: -20, opacity: 0, filter: 'blur(5px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
                 >
                     Curated courses to take you from Beginner to Expert.
                 </motion.p>
@@ -284,9 +285,9 @@ const Dashboard = () => {
             {/* Stats & Progress */}
             <motion.div
                 className="dashboard-stats-panel"
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.4 }}
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 200, damping: 20 }}
             >
                 <div className="dashboard-stats-row">
                     <div>
@@ -322,9 +323,10 @@ const Dashboard = () => {
             {skillsGap && skillsGap.essentialMissing.length > 0 && (
                 <motion.div
                     className="skills-gap-section"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                    initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
                 >
                     <div className="skills-gap-header">
                         <AlertCircle size={28} color="var(--danger)" />
