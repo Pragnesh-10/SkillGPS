@@ -1,14 +1,24 @@
 // components/common/InstallBanner.jsx
 // Add this component anywhere in your app (e.g., inside App.jsx or Header.jsx)
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePWA } from '../../hooks/usePWA';
 
 export default function InstallBanner() {
   const { canInstall, isInstalled, promptInstall } = usePWA();
+  const [isVisible, setIsVisible] = useState(true);
 
-  // Don't show if already installed or install not available
-  if (isInstalled || !canInstall) return null;
+  useEffect(() => {
+    // Hide the banner after 10 seconds
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Don't show if already installed, install not available, or timer expired
+  if (isInstalled || !canInstall || !isVisible) return null;
 
   return (
     <div style={styles.banner}>
